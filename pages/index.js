@@ -11,7 +11,7 @@ import { makeTile, getRewardSchema } from '../utils/ceramic'
 import DocView from '../components/DocView'
 import Button from '../components/Button'
 
-const CERAMIC_URL = process.env.CERAMIC_API || 'http://localhost:7007'
+const CERAMIC_URL = process.env.NEXT_PUBLIC_CERAMIC_API || 'http://localhost:7007'
 
 export default function Home() {
   const [status, setStatus] = useState('Not authenticated');
