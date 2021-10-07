@@ -27,10 +27,10 @@ export default function Home() {
       ...ThreeIdResolver.getResolver(ceramic),
     }
     const did = new DID({ resolver })
+
     ceramic.did = did;
     setStatus(ceramic.did.authenticated ? "Authenticated" : "Not authenticated")
     setId(0);
-
   }
 
   useEffect(async () => {
@@ -69,7 +69,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="mx-auto max-w-lg">
+      <main className="mx-auto max-w-xl mt-48">
         {status}
         {id ? <p>ID: {id}</p> : null}
 
@@ -82,6 +82,13 @@ export default function Home() {
         <Button onClick={async () => {
           console.log('Signed message:', await signMessage('hello'))
         }}>Sign a message</Button>
+
+        <Button onClick={async () => {
+          let ceramic = window.ceramic;
+
+          const foo = await ceramic.did.resolve('did:3:kjzl6cwe1jw146hbs4gvmwftw7w5hwv1dfj2m2uwz0iyx0z0uruvu6bt7cw7xwh')
+          console.log(foo);
+        }}>Resolve sample DID</Button>
 
         <Button onClick={async () => {
           let ceramic = window.ceramic;
@@ -123,7 +130,7 @@ export default function Home() {
           await fcl.authenticate()
           const currentUser = await fcl.currentUser().snapshot()
           console.log('Current user', currentUser)
-        }}>Get current user</Button>
+        }}>Get current user (fcl)</Button>
       </main>
 
     </div>
