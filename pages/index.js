@@ -13,6 +13,12 @@ import Button from '../components/Button'
 
 const CERAMIC_URL = process.env.NEXT_PUBLIC_CERAMIC_API || 'http://localhost:7007'
 
+function Divider() {
+  return (
+    <div className="w-full h-1 rounded my-4 bg-gray-200"></div>
+  )
+}
+
 export default function Home() {
   const [status, setStatus] = useState('Not authenticated');
   const [id, setId] = useState(0);
@@ -51,14 +57,14 @@ export default function Home() {
     await doc.update({ title: 'The great gatsby', message: 'something else' })
     console.log(doc.content)
     setDoc(doc)
-    setcontent(doc ? JSON.stringify(doc.content) : "")
+    setcontent(doc ? JSON.stringify(doc.content, null, 2) : "")
   }
 
   const [streamId, setStreamId] = useState('');
   const [content, setcontent] = useState('');
   useEffect(() => {
     setStreamId(doc ? doc.id.toString() : "")
-    setcontent(doc ? JSON.stringify(doc.content) : "")
+    setcontent(doc ? JSON.stringify(doc.content, null, 2) : "")
   }, [doc])
 
   return (
@@ -80,10 +86,6 @@ export default function Home() {
         }}>Get a new DID</Button>
 
         <Button onClick={async () => {
-          console.log('Signed message:', await signMessage('hello'))
-        }}>Sign a message</Button>
-
-        <Button onClick={async () => {
           let ceramic = window.ceramic;
 
           const foo = await ceramic.did.resolve('did:3:kjzl6cwe1jw146hbs4gvmwftw7w5hwv1dfj2m2uwz0iyx0z0uruvu6bt7cw7xwh')
@@ -100,6 +102,7 @@ export default function Home() {
           window.doc = doc;
         }}>make doc</Button>
 
+        <Divider />
 
         <Button onClick={async () => {
           let ceramic = window.ceramic;
@@ -125,6 +128,12 @@ export default function Home() {
 
         }}>Authenticate with Flow</Button>
 
+
+        <Divider />
+
+        <Button onClick={async () => {
+          console.log('Signed message:', await signMessage('hello'))
+        }}>Sign a message</Button>
 
         <Button onClick={async () => {
           await fcl.authenticate()
