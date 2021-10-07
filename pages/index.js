@@ -10,6 +10,7 @@ import { fcl, getProvider, signMessage, verifySignatures } from '../utils/did-pr
 import { makeTile, getRewardSchema } from '../utils/ceramic'
 import DocView from '../components/DocView'
 import Button from '../components/Button'
+import InputButton from '../components/InputButton'
 
 const CERAMIC_URL = process.env.NEXT_PUBLIC_CERAMIC_API || 'http://localhost:7007'
 
@@ -85,12 +86,19 @@ export default function Home() {
           refresh();
         }}>Get a new DID</Button>
 
-        <Button onClick={async () => {
-          let ceramic = window.ceramic;
+        <InputButton
+          placeholder='DID string'
+          hint='Enter a DID string to resolve... something like did:3:kjzl6cwe1jw146hbs4gvmwftw7w5hwv1dfj2m2uwz0iyx0z0uruvu6bt7cw7xwh'
+          callback={async (did) => {
+            let ceramic = window.ceramic;
+            if (!did.startsWith('did:3:')) {
+              did = 'did:3:' + did;
+            }
+            const foo = await ceramic.did.resolve(did)
+            console.log(did)
+            console.log(foo);
 
-          const foo = await ceramic.did.resolve('did:3:kjzl6cwe1jw146hbs4gvmwftw7w5hwv1dfj2m2uwz0iyx0z0uruvu6bt7cw7xwh')
-          console.log(foo);
-        }}>Resolve sample DID</Button>
+          }}>Resolve DID</InputButton>
 
         <Button onClick={async () => {
           let ceramic = window.ceramic;
