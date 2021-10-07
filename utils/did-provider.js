@@ -59,7 +59,7 @@ const getPermission = async (request) => {
   return request.payload.paths
 }
 
-export async function getProvider(signedMessage) {
+export async function getProvider(ceramic, signedMessage) {
   const authId = 'flowAuthentication';
   const authSecret = await getEntropy(signedMessage);
   console.log('authSecret', authSecret)
@@ -67,6 +67,7 @@ export async function getProvider(signedMessage) {
   const threeId = await ThreeIdProvider.create({
     getPermission,
     authSecret,
+    ceramic,
     authId,
   })
 
