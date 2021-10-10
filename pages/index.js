@@ -8,7 +8,6 @@ import Ceramic from '@ceramicnetwork/http-client'
 import { DID } from 'dids'
 import { fcl, getProvider, signMessage, verifySignatures } from '../utils/did-provider'
 import { makeTile, getRewardSchema } from '../utils/ceramic'
-import DocView from '../components/DocView'
 import Button from '../components/Button'
 import InputButton from '../components/InputButton'
 
@@ -34,7 +33,6 @@ export default function Home() {
       ...ThreeIdResolver.getResolver(ceramic),
     }
     const did = new DID({ resolver })
-
     ceramic.did = did;
     setStatus(ceramic.did.authenticated ? "Authenticated" : "Not authenticated")
     setId(0);
@@ -46,27 +44,8 @@ export default function Home() {
     }
   }, [])
 
+
   const [doc, setDoc] = useState(null);
-  const loadDoc = async (streamId) => {
-    let ceramic = window.ceramic;
-
-    setStatus('Loading ' + JSON.stringify(streamId))
-    let c = await ceramic.loadStream(streamId);
-    setDoc(c);
-  }
-  const updateDoc = async () => {
-    await doc.update({ title: 'The great gatsby', message: 'something else' })
-    console.log(doc.content)
-    setDoc(doc)
-    setcontent(doc ? JSON.stringify(doc.content, null, 2) : "")
-  }
-
-  const [streamId, setStreamId] = useState('');
-  const [content, setcontent] = useState('');
-  useEffect(() => {
-    setStreamId(doc ? doc.id.toString() : "")
-    setcontent(doc ? JSON.stringify(doc.content, null, 2) : "")
-  }, [doc])
 
   return (
     <div>
@@ -77,14 +56,67 @@ export default function Home() {
       </Head>
 
       <main className="mx-auto max-w-xl mt-48">
-        {status}
-        {id ? <p>ID: {id}</p> : null}
+        <div className="my-4 border rounded-xl p-8 text-sm">
+          <p>{status}</p>
+          {id ? <p>ID: {id}</p> : null}
+        </div>
 
-        <DocView streamId={streamId} setStreamId={setStreamId} content={content} onLoad={loadDoc} updateDoc={updateDoc} />
+        {status === 'Authenticated' ?
+          <Button onClick={async () => {
+            refresh();
+          }}>Reset</Button> :
 
-        <Button onClick={async () => {
-          refresh();
-        }}>Get a new DID</Button>
+          <Button onClick={async () => {
+            let ceramic = window.ceramic;
+
+            if (!ceramic.did.authenticated) {
+              setStatus('Sign in with Flow')
+              const signedMessage = await signMessage('hello world')
+
+              setStatus('Communicating with Ceramic network')
+              try {
+                const provider = await getProvider(ceramic, signedMessage);
+                ceramic.did.setProvider(provider)
+              } catch {
+                console.error(ceramic.did)
+              }
+            }
+
+            setStatus('Authenticating...')
+            await ceramic.did.authenticate();
+            setStatus('Authenticated')
+            setId(ceramic.did.id);
+
+          }}>Authenticate with Flow</Button>
+        }
+
+        {
+          status === "Authenticated" && (
+            <Button onClick={async () => {
+              let ceramic = window.ceramic;
+
+              const schema = await getRewardSchema(ceramic);
+              const doc = await makeTile(ceramic, schema);
+              console.log('Made a new doc!', doc.id.toString());
+              setDoc(doc);
+              window.doc = doc;
+            }}>make doc</Button>
+          )
+        }
+
+        <Divider />
+
+        <InputButton
+          placeholder='message to sign'
+          hint='Sign a message with your Flow account'
+          callback={async (msg) => {
+            const signatures = await signMessage(msg)
+            console.log('Signed message', signatures[0])
+
+            const trues = await verifySignatures(msg, signatures);
+            console.log('Verify?', trues)
+
+          }}>Sign Message</InputButton>
 
         <InputButton
           placeholder='DID string'
@@ -100,54 +132,16 @@ export default function Home() {
 
           }}>Resolve DID</InputButton>
 
-        <Button onClick={async () => {
-          let ceramic = window.ceramic;
-
-          const schema = await getRewardSchema(ceramic);
-          const doc = await makeTile(ceramic, schema);
-          console.log('Made a new doc!', doc.id.toString());
-          setDoc(doc);
-          window.doc = doc;
-        }}>make doc</Button>
-
-        <Divider />
-
-        <Button onClick={async () => {
-          let ceramic = window.ceramic;
-
-          if (!ceramic.did.authenticated) {
-            setStatus('Sign in with Flow')
-            const signedMessage = await signMessage('hello world')
-            const trues = await verifySignatures('hello world', signedMessage);
-
-            setStatus('Communicating with Ceramic network')
-            try {
-              const provider = await getProvider(ceramic, signedMessage);
-              ceramic.did.setProvider(provider)
-            } catch {
-              console.error(ceramic.did)
-            }
-          }
-
-          setStatus('Authenticating...')
-          await ceramic.did.authenticate();
-          setStatus('Authenticated')
-          setId(ceramic.did.id);
-
-        }}>Authenticate with Flow</Button>
-
-
-        <Divider />
-
-        <Button onClick={async () => {
-          console.log('Signed message:', await signMessage('hello'))
-        }}>Sign a message</Button>
 
         <Button onClick={async () => {
           await fcl.authenticate()
           const currentUser = await fcl.currentUser().snapshot()
           console.log('Current user', currentUser)
         }}>Get current user (fcl)</Button>
+
+        <Divider />
+
+
       </main>
 
     </div>

@@ -3,18 +3,22 @@ import * as fcl from "@onflow/fcl"
 
 fcl.config()
   .put("env", "testnet")
-  .put("accessNode.api", "https://access-testnet.onflow.org")
-  .put("discovery.wallet", "https://fcl-discovery.onflow.org/testnet/authn")
+  .put("accessNode.api", "http://localhost:8080")
+  .put("discovery.wallet", "http://localhost:7001/fcl/authn")
   .put("app.detail.title", "Test Harness")
   .put("app.detail.icon", "https://i.imgur.com/r23Zhvu.png")
   .put("service.OpenID.scopes", "email email_verified name zoneinfo")
   .put("0xFlowToken", "0x7e60df042a9c0868")
 
+// Testnet usage (does not work with dev wallet)
+//   .put("accessNode.api", "https://access-testnet.onflow.org")
+//   .put("discovery.wallet", "https://fcl-discovery.onflow.org/testnet/authn")
 
 export const signMessage = async (msg) => {
   const MSG = Buffer.from(msg).toString("hex")
   try {
-    return await fcl.currentUser().signUserMessage(MSG)
+    let c = await fcl.currentUser().signUserMessage(MSG)
+    return c
   } catch (error) {
     console.log(error)
   }
@@ -22,7 +26,8 @@ export const signMessage = async (msg) => {
 
 export const verifySignatures = async (message, compositeSignatures) => {
   try {
-    return await fcl.verifyUserSignature(message, compositeSignatures)
+    const MSG = Buffer.from(message).toString("hex")
+    return await fcl.verifyUserSignatures(MSG, compositeSignatures)
   } catch (error) {
     console.log(error)
   }
