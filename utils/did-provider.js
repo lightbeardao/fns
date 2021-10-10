@@ -1,18 +1,21 @@
 import ThreeIdProvider from '3id-did-provider'
 import * as fcl from "@onflow/fcl"
 
+const USE_LOCAL = false;
+const USE_DEV_WALLET = true;
+
+const wallet_api = USE_DEV_WALLET ? "http://localhost:7001/fcl/authn" : "https://fcl-discovery.onflow.org/testnet/authn";
+const node_api = USE_LOCAL ? "http://localhost:8080" : "https://access-testnet.onflow.org"
+
 fcl.config()
   .put("env", "testnet")
-  .put("accessNode.api", "http://localhost:8080")
-  .put("discovery.wallet", "http://localhost:7001/fcl/authn")
+  .put("accessNode.api", node_api)
+  .put("discovery.wallet", wallet_api)
   .put("app.detail.title", "Test Harness")
   .put("app.detail.icon", "https://i.imgur.com/r23Zhvu.png")
   .put("service.OpenID.scopes", "email email_verified name zoneinfo")
   .put("0xFlowToken", "0x7e60df042a9c0868")
 
-// Testnet usage (does not work with dev wallet)
-//   .put("accessNode.api", "https://access-testnet.onflow.org")
-//   .put("discovery.wallet", "https://fcl-discovery.onflow.org/testnet/authn")
 
 export const signMessage = async (msg) => {
   const MSG = Buffer.from(msg).toString("hex")

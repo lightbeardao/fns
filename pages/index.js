@@ -64,6 +64,7 @@ export default function Home() {
         {status === 'Authenticated' ?
           <Button onClick={async () => {
             refresh();
+            await fcl.unauthenticate()
           }}>Reset</Button> :
 
           <Button onClick={async () => {
