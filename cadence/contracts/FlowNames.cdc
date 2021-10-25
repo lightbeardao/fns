@@ -44,12 +44,13 @@ pub contract FlowNames {
     pub fun borrowToken(id: String): &NameToken
     pub fun keys(): [String]
     pub fun items(): {String: String}
+    pub fun findAuthorizedTokenId(name: String): String?
   }
 
   pub resource interface Provider {
     // an id is a name//signature string
     pub fun withdraw(id: String): @NameToken
-    pub fun withdrawByName(name: String): @NameToken
+    pub fun findAuthorizedTokenId(name: String): String?
   }
 
   pub resource interface Receiver{
@@ -66,15 +67,17 @@ pub contract FlowNames {
       return <-token
     }
 
-    // withdraw removes a NameToken from the collection
-    pub fun withdrawByName(name: String): @NameToken {
+    // findAuthorizedToken finds a NameToken from the collection that can
+    // operate on the name
+    pub fun findAuthorizedTokenId(name: String): String? {
+      let authSignatures = FlowNames.getSignatures(name: name)
       for key in self.ownedNames.keys {
         let el = &self.ownedNames[key] as &NameToken
-        if el.name == name {
-          return <- self.ownedNames.remove(key: el.key())!
+        if authSignatures[el.signature] ?? false {
+          return el.key()
         }
       }
-      panic("you don't own this name")
+      return nil
     }
 
     // borrowToken returns a reference to a NameToken
@@ -147,6 +150,9 @@ pub contract FlowNames {
 
   pub fun getDocument(name: String): String? {
     return self.documentUrl[name]
+  }
+  pub fun getSignatures(name: String): {String: Bool} {
+    return self.authorizedSignatures[name] ?? panic("Flowname not found!")
   }
 
   access(contract) fun changeDocument(name: String, existingSignature: String, newUrl: String) {
