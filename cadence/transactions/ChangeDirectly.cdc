@@ -7,6 +7,6 @@ transaction(name: String, url: String) {
   }
 
   execute {
-    FlowNames.lookups[name] = url
+    FlowNames.contents[name] = url
   }
 }

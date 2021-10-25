@@ -1,34 +1,55 @@
 pub contract FlowNames {
   
-  access(self) var lookups: {String: String}
+  // Stores the list of valid signatures that can be used to change a name
+  access(self) var authorizedSignatures: {String: {String: Bool}}
+  access(self) var documentUrl: {String: String}
   pub var registerCount: UInt256
 
   // we need to know where users keep their stuff!
   pub let CollectionStoragePath: StoragePath
   pub let CollectionPublicPath: PublicPath
 
+  /*
+    A NameToken can only be created by calling registerName()
+   */
   pub resource NameToken {
     pub let name: String
-    pub let url: String
+    pub let signature: String
 
-    init(name: String, url: String) {
+    init(name: String, signature: String) {
       self.name = name
-      self.url = url
+      self.signature = signature
     }
 
-    pub fun changeName(newUrl: String) {
-      FlowNames.changeName(name: self.name, newUrl: newUrl)
+    pub fun key(): String {
+      return self.name.concat("//").concat(self.signature)
+    }
+
+    pub fun changeDocument(newUrl: String) {
+      FlowNames.changeDocument(name: self.name, existingSignature: self.signature, newUrl: newUrl)
+    }
+    pub fun duplicate(): @FlowNames.NameToken {
+      return <- FlowNames.addSignature(name: self.name, existingSignature: self.signature, signature: self.signature)
+    }
+    pub fun newToken(signature: String): @FlowNames.NameToken {
+      return <- FlowNames.addSignature(name: self.name, existingSignature: self.signature, signature: signature)
+    }
+    pub fun removeSignature(signature: String): Bool {
+      return FlowNames.removeSignature(name: self.name, existingSignature: self.signature, signature: signature)
     }
   }
   
   pub resource interface CollectionPublic {
     pub fun deposit(token: @NameToken)
+    pub fun borrowToken(id: String): &NameToken
     pub fun keys(): [String]
     pub fun items(): {String: String}
   }
 
   pub resource interface Provider {
-    pub fun withdraw(name: String): @NameToken
+    // an id is a name//signature string
+    pub fun withdraw(id: String): @NameToken
+    pub fun withdrawByName(name: String): @NameToken
   }
 
   pub resource interface Receiver{
@@ -39,36 +60,57 @@ pub contract FlowNames {
   pub resource Collection: CollectionPublic, Provider, Receiver {
     pub var ownedNames: @{String: NameToken}
 
-    pub fun withdraw(name: String): @NameToken {
-      let token <- self.ownedNames.remove(key: name) 
-        ?? panic("Could not withdraw dappy: dappy does not exist in collection")
+    // withdraw removes a NameToken from the collection
+    pub fun withdraw(id: String): @NameToken {
+      let token <- self.ownedNames.remove(key: id) ?? panic("nothing at this id")
       return <-token
     }
 
+    // withdraw removes a NameToken from the collection
+    pub fun withdrawByName(name: String): @NameToken {
+      for key in self.ownedNames.keys {
+        let el = &self.ownedNames[key] as &NameToken
+        if el.name == name {
+          return <- self.ownedNames.remove(key: el.key())!
+        }
+      }
+      panic("you don't own this name")
+    }
+
+    // borrowToken returns a reference to a NameToken
+    pub fun borrowToken(id: String): &NameToken {
+      return &self.ownedNames[id] as &NameToken
+    }
+
+    // deposit adds a nameToken to the owned dictionary
     pub fun deposit(token: @NameToken) {
-      let oldToken <- self.ownedNames[token.name] <- token
+      // add the new token to the dictionary
+      let oldToken <- self.ownedNames[token.key()] <- token
       destroy oldToken
     }
 
+    // batchDeposit combines a collection with this collection
     pub fun batchDeposit(collection: @Collection) {
       let keys = collection.keys()
       for key in keys {
-        self.deposit(token: <-collection.withdraw(name: key))
+        self.deposit(token: <-collection.withdraw(id: key))
       }
       destroy collection
     }
 
+    // keys enumerates all the tokens in this collection
     pub fun keys(): [String] {
       return self.ownedNames.keys
     }
 
+    // items fetches all the content pairs in this collection
     pub fun items(): {String: String} {
-      var dappyTemplates: {String: String} = {}
+      var nameTokens: {String: String} = {}
       for key in self.ownedNames.keys {
         let el = &self.ownedNames[key] as &NameToken
-        dappyTemplates.insert(key: el.name, el.url)
+        nameTokens.insert(key: el.name, FlowNames.getDocument(name: el.name) ?? "no Document set")
       }
-      return dappyTemplates
+      return nameTokens
     }
 
     destroy() {
@@ -80,30 +122,59 @@ pub contract FlowNames {
     }
   }
 
+  // Finally, here are the public methods we can use
+  // - createEmptyCollection
+  // - registerName(name, signature)
+  // - getDocument(name)
+
+  // NameTokens (authorized entries) can call these special methods as well
+  // - changeDocument(name, auth, url)
+  // - addSignature(name, auth, signature) -> returns a new NameToken
+  // - removeSignature(name, auth, signature)
+
   pub fun createEmptyCollection(): @Collection {
     return <-create self.Collection()
   }
 
-  pub fun registerName(name: String, url: String): @NameToken {
+  pub fun registerName(name: String, signature: String): @NameToken {
     pre {
-      self.lookups[name] == nil : "Flowname is already registered"
+      self.authorizedSignatures[name] == nil : "Flowname is already registered"
     }
-    self.lookups[name] = url
+    self.authorizedSignatures[name] = {signature: true}
     self.registerCount = self.registerCount + 1
-    return <- create NameToken(name: name, url: url)
+    return <- create NameToken(name: name, signature: signature)
   }
 
-  // only a NameToken can use this method (to change its own url)
-  access(contract) fun changeName(name: String, newUrl: String) {
-    self.lookups[name] = newUrl
+  pub fun getDocument(name: String): String? {
+    return self.documentUrl[name]
+  }
+
+  access(contract) fun changeDocument(name: String, existingSignature: String, newUrl: String) {
+    pre {
+      self.authorizedSignatures[name]!.containsKey(existingSignature)
+    }
+    self.documentUrl[name] = newUrl
   }
   
-  pub fun lookup(name: String): String? {
-    return self.lookups[name]
+  access(contract) fun addSignature(name: String, existingSignature: String, signature: String): @FlowNames.NameToken {
+    pre {
+      self.authorizedSignatures[name]!.containsKey(existingSignature)
+    }
+    self.authorizedSignatures[name]!.insert(key: signature, true)
+
+    return <- create NameToken(name: name, signature: signature)
+  }
+  
+  access(contract) fun removeSignature(name: String, existingSignature: String, signature: String): Bool {
+    pre {
+      self.authorizedSignatures[name]!.containsKey(existingSignature)
+    }
+    return self.authorizedSignatures[name]!.remove(key: signature) ?? false
   }
 
   init() {
-    self.lookups = {}
+    self.authorizedSignatures = {}
+    self.documentUrl = {}
     self.CollectionStoragePath = /storage/FlowNames
     self.CollectionPublicPath = /public/FlowNamesPublic
     self.registerCount = 0

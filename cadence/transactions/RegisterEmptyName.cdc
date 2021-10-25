@@ -1,7 +1,7 @@
 import FlowNames from "../contracts/FlowNames.cdc"
 
 
-transaction(name: String, signature: String, content: String) {
+transaction(name: String, signature: String) {
   let receiverReference: &FlowNames.Collection{FlowNames.Receiver}
 
   prepare(acct: AuthAccount) {
@@ -11,7 +11,6 @@ transaction(name: String, signature: String, content: String) {
 
   execute {
     let newDappy <- FlowNames.registerName(name: name, signature: signature)
-    newDappy.changeDocument(newUrl: content)
     self.receiverReference.deposit(token: <-newDappy)
   }
 }

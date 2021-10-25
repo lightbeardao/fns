@@ -17,10 +17,24 @@ export const createCollection = async (recipient) => {
   await sendTransaction({ name, signers })
 }
 
-export const registerName = async (recipient, flowname, url) => {
+export const registerName = async (recipient, flowname, signature, content) => {
   const name = "RegisterName"
   const signers = [recipient]
-  const args = [flowname, url]
+  const args = [flowname, signature, content]
+  await sendTransaction({ name, args, signers })
+}
+
+export const registerEmptyName = async (recipient, flowname, signature) => {
+  const name = "RegisterEmptyName"
+  const signers = [recipient]
+  const args = [flowname, signature]
+  await sendTransaction({ name, args, signers })
+}
+
+export const addSignature = async (recipient, flowname, signature) => {
+  const name = "AddSignature"
+  const signers = [recipient]
+  const args = [flowname, signature]
   await sendTransaction({ name, args, signers })
 }
 

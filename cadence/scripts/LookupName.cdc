@@ -1,5 +1,5 @@
 import FlowNames from "../contracts/FlowNames.cdc"
 
 pub fun main(flowName: String): String {
-  return FlowNames.lookup(name: flowName) ?? "Not registered"
+  return FlowNames.getDocument(name: flowName) ?? "Document not set"
 }
