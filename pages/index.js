@@ -2,6 +2,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import Button from '../components/Button'
 import InputButton from '../components/InputButton'
+import Form from '../components/Form'
 import { useState } from 'react'
 
 import { Transactions, Scripts } from '../utils/flow'
@@ -33,6 +34,30 @@ export default function Home() {
     }
   }
 
+  const registerName = async (name, signature, url) => {
+    try {
+      setError('')
+      let transactionId = await mutate({
+        cadence: Transactions.REGISTER_NAME,
+        args: (arg, t) => [arg(name, t.String), arg(signature, t.String), arg(url, t.String)],
+        limit: 100
+      })
+      console.log("tx:", transactionId)
+      tx(transactionId).subscribe(res => {
+        console.log(res)
+        if (res.status < 4) {
+          setStatus('Processing...')
+        } else {
+          setStatus('Done')
+        }
+        if (res.errorMessage) {
+          setError(res.errorMessage)
+        }
+      })
+    } catch (err) {
+      console.log(err)
+    }
+  }
   const createCollection = async () => {
     try {
       setError('')
@@ -43,9 +68,9 @@ export default function Home() {
       console.log("tx:", transactionId)
       tx(transactionId).subscribe(res => {
         console.log(res)
-        if (res.statusCode === 0) {
+        if (res.status < 4) {
           setStatus('Processing...')
-        } else if (res.statusCode === 1) {
+        } else {
           setStatus('Done')
         }
         if (res.errorMessage) {
@@ -72,13 +97,16 @@ export default function Home() {
           await createCollection()
         }} >Create Collection</Button>
 
-
-        <Button onClick={async () => {
-          await authenticate()
-          const cc = await currentUser().snapshot()
-          console.log('Current user', cc)
-        }}>Get current user (fcl)</Button>
-
+        <Form
+          fields={[
+            { placeholder: 'name (e.g. alice.eth)' },
+            { placeholder: 'signature' },
+            { placeholder: 'content' },
+          ]}
+          title='Register a Flowname'
+          callback={async ([name, signature, content]) => {
+            await registerName(name, signature, content)
+          }}>Register</Form>
 
         <h1 className="w-full text-xl m-2 mt-4 text-center">Read methods</h1>
 
@@ -92,6 +120,14 @@ export default function Home() {
         <Button onClick={async () => {
           await listMyNames(await currentUser().snapshot())
         }} >List my names</Button>
+
+        <Button onClick={async () => {
+          await authenticate()
+          const cc = await currentUser().snapshot()
+          console.log('Current user', cc)
+        }}>Get current user (fcl)</Button>
+
+
       </main>
     </div>
 
