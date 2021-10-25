@@ -13,6 +13,7 @@ export default function Home() {
 
   const createCollection = async () => {
     try {
+      setError('')
       let transactionId = await mutate({
         cadence: Transactions.CREATE_COLLECTION,
         limit: 100
@@ -20,7 +21,11 @@ export default function Home() {
       console.log("tx:", transactionId)
       tx(transactionId).subscribe(res => {
         console.log(res)
-        setStatus(res.status)
+        if (res.statusCode === 0) {
+          setStatus('Processing...')
+        } else if (res.statusCode === 1) {
+          setStatus('Done')
+        }
         if (res.errorMessage) {
           setError(res.errorMessage)
         }
