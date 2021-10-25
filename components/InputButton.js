@@ -4,8 +4,8 @@ import { useState } from "react"
 function InputButton({ hint, placeholder, callback, children }) {
   const [text, setText] = useState('')
   return (
-    <div className="w-full my-4">
-      <form className="bg-white rounded p-4 px-2">
+    <div className="w-full">
+      <form className="bg-white rounded px-2">
 
         {hint && <p className="text-sm overflow-hidden mb-2">
           {hint}

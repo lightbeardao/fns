@@ -1,15 +1,37 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import Button from '../components/Button'
+import InputButton from '../components/InputButton'
 import { useState } from 'react'
 
-import { Transactions } from '../utils/flow/Transactions'
+import { Transactions, Scripts } from '../utils/flow'
 import { mutate, query, tx, authenticate, currentUser } from '@onflow/fcl'
 
 
 export default function Home() {
   const [status, setStatus] = useState('Create a collection to start')
   const [error, setError] = useState('')
+
+  const listMyNames = async (user) => {
+    let res = await query({
+      cadence: Scripts.LIST_MY_NAMES,
+      args: (arg, t) => [arg(user?.addr, t.Address)]
+    })
+    console.log(res)
+  }
+
+  const resolveFlowname = async (name) => {
+    try {
+
+      let res = await query({
+        cadence: Scripts.LOOKUP_NAME,
+        args: (arg, t) => [arg(name, t.String)]
+      })
+      console.log(res)
+    } catch (err) {
+      console.info(`[FlowNames] ${name} is not registered yet :)`)
+    }
+  }
 
   const createCollection = async () => {
     try {
@@ -42,25 +64,34 @@ export default function Home() {
         <meta name="description" content="Your decentralized ID provider" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="border rounded-2xl mx-auto max-w-xl p-4 mt-48 flex flex-col">
+      <main className="border rounded-2xl mx-auto max-w-xl p-4 mt-48 flex flex-col gap-2">
         <p><strong>Status: </strong>{status}</p>
         {error && <p class="text-red-700">{error}</p>}
 
-        <div>
-          <Button onClick={async () => {
-            await createCollection()
-          }} >Create Collection</Button>
-        </div>
-        <div>
+        <Button onClick={async () => {
+          await createCollection()
+        }} >Create Collection</Button>
 
-          <Button onClick={async () => {
-            await authenticate()
-            const cc = await currentUser().snapshot()
-            console.log('Current user', cc)
-          }}>Get current user (fcl)</Button>
 
-        </div>
+        <Button onClick={async () => {
+          await authenticate()
+          const cc = await currentUser().snapshot()
+          console.log('Current user', cc)
+        }}>Get current user (fcl)</Button>
 
+
+        <h1 className="w-full text-xl m-2 mt-4 text-center">Read methods</h1>
+
+        <InputButton
+          placeholder='alice.eth'
+          hint='Look up any Flowname'
+          callback={async (msg) => {
+            await resolveFlowname(msg)
+          }}>Resolve</InputButton>
+
+        <Button onClick={async () => {
+          await listMyNames(await currentUser().snapshot())
+        }} >List my names</Button>
       </main>
     </div>
 

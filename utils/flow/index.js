@@ -1,3 +1,23 @@
+export const Scripts = {
+  LOOKUP_NAME: `
+  import FlowNames from 0xFlowNames
+
+pub fun main(flowName: String): FlowNames.DID {
+  return FlowNames.getDID(name: flowName)
+}
+  `,
+  LIST_MY_NAMES: `
+  import FlowNames from 0xFlowNames
+
+pub fun main(addr: Address): {String: String} {
+  let account = getAccount(addr)
+  let ref = account.getCapability<&{FlowNames.CollectionPublic}>(FlowNames.CollectionPublicPath)
+              .borrow() ?? panic("Cannot borrow reference")
+  let dappies = ref.items()
+  return dappies
+}`
+}
+
 export const Transactions = {
   CREATE_COLLECTION: `
   import FlowNames from 0xFlowNames
