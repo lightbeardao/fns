@@ -192,6 +192,9 @@ pub contract FlowNames {
     pre {
       self.authorizedSignatures[name]!.containsKey(existingSignature)
     }
+    post {
+      !self.authorizedSignatures[name]!.containsKey(signature): "signature should be gone"
+    }
     return self.authorizedSignatures[name]!.remove(key: signature) ?? false
   }
 
