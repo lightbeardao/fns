@@ -38,6 +38,20 @@ export const addSignature = async (recipient, flowname, signature) => {
   await sendTransaction({ name, args, signers })
 }
 
+export const removeSignature = async (recipient, flowname, signature) => {
+  const name = "RemoveSignature"
+  const signers = [recipient]
+  const args = [flowname, signature]
+  await sendTransaction({ name, args, signers })
+}
+
+export const getDID = async (flowname) => {
+  const name = "LookupDocument"
+  const args = [flowname]
+  const dappies = await executeScript({ name, args })
+  return dappies
+}
+
 export const listNames = async (recipient) => {
   const name = "ListCollection"
   const args = [recipient]

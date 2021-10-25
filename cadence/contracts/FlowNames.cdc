@@ -38,6 +38,18 @@ pub contract FlowNames {
       return FlowNames.removeSignature(name: self.name, existingSignature: self.signature, signature: signature)
     }
   }
+
+  pub struct DID {
+    pub let name: String
+    pub let content: String?
+    pub let authSignatures: {String: Bool}
+
+    init(name: String, content: String?, signatures: {String: Bool}){
+      self.name = name
+      self.content = content
+      self.authSignatures = signatures
+    }
+  }
   
   pub resource interface CollectionPublic {
     pub fun deposit(token: @NameToken)
@@ -153,6 +165,11 @@ pub contract FlowNames {
   }
   pub fun getSignatures(name: String): {String: Bool} {
     return self.authorizedSignatures[name] ?? panic("Flowname not found!")
+  }
+  pub fun getDID(name: String): DID {
+    let content = FlowNames.getDocument(name: name)
+    let signatures = FlowNames.getSignatures(name: name)
+    return DID(name: name, content: content, signatures: signatures)
   }
 
   access(contract) fun changeDocument(name: String, existingSignature: String, newUrl: String) {
