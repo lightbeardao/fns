@@ -76,7 +76,7 @@ describe("FlowNames", () => {
       expect(result).toMatchObject({
         name: 'alice.eth',
         content: 'content hash 1',
-        authSignatures: { 'signature 2': true, 'signature 1': false }
+        authSignatures: { 'signature 2': true }
       })
     })
 
