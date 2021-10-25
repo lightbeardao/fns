@@ -2,10 +2,10 @@ import ThreeIdProvider from '3id-did-provider'
 import * as fcl from "@onflow/fcl"
 
 const USE_LOCAL = false;
-const USE_DEV_WALLET = true;
+const USE_DEV_WALLET = false;
 
 const wallet_api = USE_DEV_WALLET ? "http://localhost:7001/fcl/authn" : "https://fcl-discovery.onflow.org/testnet/authn";
-const node_api = USE_LOCAL ? "http://localhost:8080" : "https://access-testnet.onflow.org"
+const node_api = USE_LOCAL ? "http://localhost:8080" : "https://access-testnet.onflow.org";
 
 fcl.config()
   .put("env", "testnet")
@@ -14,7 +14,7 @@ fcl.config()
   .put("app.detail.title", "Test Harness")
   .put("app.detail.icon", "https://i.imgur.com/r23Zhvu.png")
   .put("service.OpenID.scopes", "email email_verified name zoneinfo")
-  .put("0xFlowToken", "0x7e60df042a9c0868")
+  .put("0xFlowToken", "0x7e60df042a9c0868");
 
 
 export const signMessage = async (msg) => {
