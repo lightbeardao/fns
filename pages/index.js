@@ -10,7 +10,7 @@ import { mutate, query, tx, authenticate, currentUser } from '@onflow/fcl'
 
 
 export default function Home() {
-  const [status, setStatus] = useState('Create a collection to start')
+  const [status, setStatus] = useState(-1)
   const [error, setError] = useState('')
 
   const listMyNames = async (user) => {
@@ -19,6 +19,27 @@ export default function Home() {
       args: (arg, t) => [arg(user?.addr, t.Address)]
     })
     console.log(res)
+  }
+
+  const submitFlowTx = async ({ cadence, args }) => {
+    try {
+      setError('')
+      let transactionId = await mutate({
+        cadence,
+        args,
+        limit: 100
+      })
+      console.log("tx:", transactionId)
+      tx(transactionId).subscribe(res => {
+        console.log(res.status)
+        setStatus(res.status)
+        if (res.errorMessage) {
+          setError(res.errorMessage)
+        }
+      })
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   const resolveFlowname = async (name) => {
@@ -34,29 +55,24 @@ export default function Home() {
     }
   }
 
+  const addSignature = async (name, signature) => {
+    submitFlowTx({
+      cadence: Transactions.ADD_SIGNATURE,
+      args: (arg, t) => [arg(name, t.String), arg(signature, t.String)]
+    })
+  }
+  const removeSignature = async (name, signature) => {
+    submitFlowTx({
+      cadence: Transactions.REMOVE_SIGNATURE,
+      args: (arg, t) => [arg(name, t.String), arg(signature, t.String)]
+    })
+  }
+
   const registerName = async (name, signature, url) => {
-    try {
-      setError('')
-      let transactionId = await mutate({
-        cadence: Transactions.REGISTER_NAME,
-        args: (arg, t) => [arg(name, t.String), arg(signature, t.String), arg(url, t.String)],
-        limit: 100
-      })
-      console.log("tx:", transactionId)
-      tx(transactionId).subscribe(res => {
-        console.log(res)
-        if (res.status < 4) {
-          setStatus('Processing...')
-        } else {
-          setStatus('Done')
-        }
-        if (res.errorMessage) {
-          setError(res.errorMessage)
-        }
-      })
-    } catch (err) {
-      console.log(err)
-    }
+    submitFlowTx({
+      cadence: Transactions.REGISTER_NAME,
+      args: (arg, t) => [arg(name, t.String), arg(signature, t.String), arg(url, t.String)]
+    })
   }
   const createCollection = async () => {
     try {
@@ -67,7 +83,6 @@ export default function Home() {
       })
       console.log("tx:", transactionId)
       tx(transactionId).subscribe(res => {
-        console.log(res)
         if (res.status < 4) {
           setStatus('Processing...')
         } else {
@@ -90,7 +105,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="border rounded-2xl mx-auto max-w-xl p-4 mt-48 flex flex-col gap-2">
-        <p><strong>Status: </strong>{status}</p>
+        <p><strong>Status: </strong>{status === 3 ? "almost done..." : status === 4 ? "done" : status === -1 ?  "":  "processing..."}</p>
         {error && <p class="text-red-700">{error}</p>}
 
         <Button onClick={async () => {
@@ -108,6 +123,25 @@ export default function Home() {
             await registerName(name, signature, content)
           }}>Register</Form>
 
+        <Form
+          fields={[
+            { placeholder: 'name you own (e.g. alice.eth)' },
+            { placeholder: 'signature' },
+          ]}
+          title='Add additional signature'
+          callback={async ([name, signature]) => {
+            await addSignature(name, signature)
+          }}>Add Signature</Form>
+
+        <Form
+          fields={[
+            { placeholder: 'name you own (e.g. alice.eth)' },
+            { placeholder: 'signature to revoke' },
+          ]}
+          title='Revoke a signature'
+          callback={async ([name, signature]) => {
+            await removeSignature(name, signature)
+          }}>Revoke</Form>
         <h1 className="w-full text-xl m-2 mt-4 text-center">Read methods</h1>
 
         <InputButton
