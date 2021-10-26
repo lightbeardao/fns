@@ -38,6 +38,13 @@ export const addSignature = async (recipient, flowname, signature) => {
   await sendTransaction({ name, args, signers })
 }
 
+export const giveSignature = async (holder, recipient, flowname, signature) => {
+  const name = "GiveSignature"
+  const signers = [holder, recipient]
+  const args = [flowname, signature]
+  await sendTransaction({ name, args, signers })
+}
+
 export const removeSignature = async (recipient, flowname, signature) => {
   const name = "RemoveSignature"
   const signers = [recipient]

@@ -9,7 +9,7 @@ import {
 import {
   deployFlowNamesContract, createCollection,
   addSignature, registerName, registerEmptyName,
-  removeSignature, getDID,
+  removeSignature, getDID, giveSignature,
   listNames, lookupName, ChangeDirectly
 } from './src/FlowNames'
 
@@ -30,8 +30,10 @@ describe("FlowNames", () => {
       await deployFlowNamesContract()
 
       const alice = await getAccountAddress("Alice");
+      const bob = await getAccountAddress("Bob");
 
       await createCollection(alice)
+      await createCollection(bob)
       await registerName(alice, "alice.eth", "signature 1", "content hash 1")
       await registerName(alice, "alice2.eth", "signature 1", "content hash 2")
     });
@@ -64,8 +66,12 @@ describe("FlowNames", () => {
       await addSignature(alice, "alice.eth", "signature 2");
 
       // unchanged
-      let result = await listNames(alice);
-      expect(result['alice2.eth']).toBe("content hash 2")
+      let result = await getDID('alice.eth');
+      expect(result).toMatchObject({
+        name: 'alice.eth',
+        content: 'content hash 1',
+        authSignatures: { 'signature 1': true, 'signature 2': true }
+      })
     })
 
     it("Should be able to remove a signature", async () => {
@@ -77,6 +83,22 @@ describe("FlowNames", () => {
         name: 'alice.eth',
         content: 'content hash 1',
         authSignatures: { 'signature 2': true }
+      })
+    })
+
+    it("Should be able to transfer token to bob", async () => {
+      const alice = await getAccountAddress("Alice");
+      const bob = await getAccountAddress("Bob");
+      await giveSignature(alice, bob, "alice.eth", "signature 2");
+
+      // now bob can use the signature
+      await addSignature(bob, 'alice.eth', 'bob now')
+
+      let result = await getDID('alice.eth');
+      expect(result).toMatchObject({
+        name: 'alice.eth',
+        content: 'content hash 1',
+        authSignatures: { 'signature 2': true, 'bob now': true }
       })
     })
 
