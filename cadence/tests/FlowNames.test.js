@@ -42,8 +42,8 @@ describe("FlowNames", () => {
       const alice = await getAccountAddress("Alice");
 
       const userNames = await listNames(alice)
-      expect(userNames['alice.eth']).toBe("content hash 1")
-      expect(userNames['alice2.eth']).toBe("content hash 2")
+      expect(userNames['alice.eth']).toBe("signature 1")
+      expect(userNames['alice2.eth']).toBe("signature 1")
     });
 
     it("Should lookup a name", async () => {
@@ -86,7 +86,7 @@ describe("FlowNames", () => {
       })
     })
 
-    it("Should be able to transfer token to bob", async () => {
+    it("Should be able to transfer a token", async () => {
       const alice = await getAccountAddress("Alice");
       const bob = await getAccountAddress("Bob");
       await giveSignature(alice, bob, "alice.eth", "signature 2");

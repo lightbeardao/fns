@@ -118,12 +118,12 @@ pub contract FlowNames {
       return self.ownedNames.keys
     }
 
-    // items fetches all the content pairs in this collection
+    // items returns the tokens I have
     pub fun items(): {String: String} {
       var nameTokens: {String: String} = {}
       for key in self.ownedNames.keys {
         let el = &self.ownedNames[key] as &NameToken
-        nameTokens.insert(key: el.name, FlowNames.getDocument(name: el.name) ?? "no Document set")
+        nameTokens.insert(key: el.name, el.signature)
       }
       return nameTokens
     }
