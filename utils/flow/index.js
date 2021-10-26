@@ -15,7 +15,17 @@ pub fun main(addr: Address): {String: String} {
               .borrow() ?? panic("Cannot borrow reference")
   let dappies = ref.items()
   return dappies
-}`
+}`,
+  AUTHORIZED_ON_NAME: `
+  import FlowNames from 0xFlowNames
+
+pub fun main(addr: Address, name: String): String? {
+  let account = getAccount(addr)
+  let ref = account.getCapability<&{FlowNames.CollectionPublic}>(FlowNames.CollectionPublicPath)
+              .borrow() ?? panic("Cannot borrow reference")
+  return ref.findAuthorizedTokenId(name: name)
+}
+  `
 }
 
 export const Transactions = {

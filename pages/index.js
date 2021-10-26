@@ -6,7 +6,7 @@ import Form from '../components/Form'
 import { useState } from 'react'
 
 import { Transactions, Scripts } from '../utils/flow'
-import { mutate, query, tx, authenticate, currentUser } from '@onflow/fcl'
+import { mutate, query, tx, authenticate, unauthenticate, currentUser } from '@onflow/fcl'
 
 
 export default function Home() {
@@ -52,6 +52,21 @@ export default function Home() {
       console.log(res)
     } catch (err) {
       console.info(`[FlowNames] ${name} is not registered yet :)`)
+    }
+  }
+
+  const signInAs = async (name) => {
+    let user = await currentUser().snapshot();
+    console.log('Signing in...', name)
+    try {
+
+      let res = await query({
+        cadence: Scripts.AUTHORIZED_ON_NAME,
+        args: (arg, t) => [arg(user?.addr, t.Address), arg(name, t.String)]
+      })
+      console.log("Signed in with token:", res)
+    } catch (err) {
+      console.info(`[FlowNames] Can't sign in ${name}`)
     }
   }
 
@@ -105,7 +120,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="border rounded-2xl mx-auto max-w-xl p-4 mt-48 flex flex-col gap-2">
-        <p><strong>Status: </strong>{status === 3 ? "almost done..." : status === 4 ? "done" : status === -1 ?  "":  "processing..."}</p>
+        <p><strong>Status: </strong>{status === 3 ? "almost done..." : status === 4 ? "done" : typeof (status) === 'string' ? status : "processing..."}</p>
         {error && <p class="text-red-700">{error}</p>}
 
         <Button onClick={async () => {
@@ -151,6 +166,13 @@ export default function Home() {
             await resolveFlowname(msg)
           }}>Resolve</InputButton>
 
+        <InputButton
+          placeholder='alice.eth'
+          hint='Sign in as Flowname'
+          callback={async (msg) => {
+            await signInAs(msg)
+          }}>Sign in</InputButton>
+
         <Button onClick={async () => {
           await listMyNames(await currentUser().snapshot())
         }} >List my names</Button>
@@ -159,7 +181,14 @@ export default function Home() {
           await authenticate()
           const cc = await currentUser().snapshot()
           console.log('Current user', cc)
+          setStatus("Logged in")
         }}>Get current user (fcl)</Button>
+
+
+        <Button onClick={async () => {
+          await unauthenticate()
+          setStatus("Logged out!")
+        }}>Sign out</Button>
 
 
       </main>
