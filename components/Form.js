@@ -6,7 +6,7 @@ function Form({ title, fields, callback, children }) {
 
   return (
     <div className="w-full">
-      <form className="bg-white rounded px-2" autoComplete={false}>
+      <form className="bg-white rounded px-2" autoComplete="off">
 
         {title && <h1 className="w-full text-xl m-2 mt-4 text-center">{title}</h1>
         }
