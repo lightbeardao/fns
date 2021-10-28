@@ -167,7 +167,7 @@ export default function Home() {
           callback={async ([name, signature]) => {
             await removeSignature(name, signature)
           }}>Revoke</Form>
-        <h1 className="w-full text-xl m-2 mt-4 text-center">Read methods</h1>
+        <h1 className="w-full text-xl my-2 mt-4 text-center">Read methods</h1>
 
         <InputButton
           placeholder='alice.eth'
@@ -192,18 +192,14 @@ export default function Home() {
           const cc = await currentUser().snapshot()
           console.log('Current user', cc)
           setStatus("Logged in")
-        }}>Get current user (fcl)</Button>
+        }}>Get current user (or sign in)</Button>
 
+        <h1 className="w-full text-xl my-2 mt-4 text-center"></h1>
 
         <Button onClick={async () => {
           await unauthenticate()
           setStatus("Logged out!")
         }}>Sign out</Button>
-
-        <Button onClick={async () => {
-          await resetCollection()
-          setStatus("collection reset")
-        }}>Reset (only for new contracts)</Button>
 
 
       </main>
