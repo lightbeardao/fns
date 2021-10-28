@@ -8,6 +8,7 @@ let challengeToName = {}
 
   Normally, the user will say: "I want to sign in as xyz.foo"
   We then generate something - the challenge - for the user to try to verify
+  - Make sure to include a nonce, to avoid replay attacks
 */
 
 export function signIn({ name }) {
@@ -27,8 +28,6 @@ export async function getServerResponse(challenge, compositeSignatures) {
     let verified = await verifyUserSignatures(challenge, compositeSignatures);
     if (!verified) return false;
 
-    // this needs to throw an error if not authorized!!
-    // TODO: change to bool
     let name = challengeToName[challenge]
     let address = compositeSignatures[0]?.addr;
     let res = await query({
