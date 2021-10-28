@@ -55,7 +55,7 @@ pub contract FlowNames {
     pub fun deposit(token: @NameToken)
     pub fun borrowToken(id: String): &NameToken
     pub fun keys(): [String]
-    pub fun items(): {String: String}
+    pub fun items(): {String: [String]}
     pub fun findAuthorizedTokenId(name: String): String?
   }
 
@@ -119,11 +119,15 @@ pub contract FlowNames {
     }
 
     // items returns the tokens I have
-    pub fun items(): {String: String} {
-      var nameTokens: {String: String} = {}
+    pub fun items(): {String: [String]} {
+      var nameTokens: {String: [String]} = {}
       for key in self.ownedNames.keys {
         let el = &self.ownedNames[key] as &NameToken
-        nameTokens.insert(key: el.name, el.signature)
+        if nameTokens.containsKey(el.name) {
+          nameTokens[el.name]!.append(el.signature)
+        } else {
+          nameTokens.insert(key: el.name, [el.signature])
+        }
       }
       return nameTokens
     }

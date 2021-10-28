@@ -42,8 +42,8 @@ describe("FlowNames", () => {
       const alice = await getAccountAddress("Alice");
 
       const userNames = await listNames(alice)
-      expect(userNames['alice.eth']).toBe("signature 1")
-      expect(userNames['alice2.eth']).toBe("signature 1")
+      expect(userNames['alice.eth']).toBe(["signature 1"])
+      expect(userNames['alice2.eth']).toBe(["signature 1"])
     });
 
     it("Should lookup a name", async () => {
@@ -65,7 +65,14 @@ describe("FlowNames", () => {
       const alice = await getAccountAddress("Alice");
       await addSignature(alice, "alice.eth", "signature 2");
 
-      // unchanged
+      // on the account
+      let keyring = await listNames(alice);
+      expect(keyring).toMatchObject({
+        'alice.eth': ["signature 1", "signature 2"],
+        'alice2.eth': ["signature 1"]
+      })
+
+      // on the registry
       let result = await getDID('alice.eth');
       expect(result).toMatchObject({
         name: 'alice.eth',
@@ -78,6 +85,10 @@ describe("FlowNames", () => {
       const alice = await getAccountAddress("Alice");
       await removeSignature(alice, "alice.eth", "signature 1");
 
+      // on the account, it may be out of date
+      // or some other person's token...
+
+      // on the registry
       let result = await getDID('alice.eth');
       expect(result).toMatchObject({
         name: 'alice.eth',
