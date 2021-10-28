@@ -85,7 +85,7 @@ pub contract FlowNames {
       let authSignatures = FlowNames.getSignatures(name: name)
       for key in self.ownedNames.keys {
         let el = &self.ownedNames[key] as &NameToken
-        if authSignatures[el.signature] ?? false {
+        if el.name == name && (authSignatures[el.signature] ?? false) {
           return el.key()
         }
       }
