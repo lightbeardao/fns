@@ -124,5 +124,15 @@ transaction(name: String, signature: String) {
     self.receiverReference.deposit(token: <-authToken)
   }
 }
-  `
+  `,
+  RESET_COLLECTION: `
+  import FlowNames from 0xOldFlowNames
+
+transaction {
+  prepare(acct: AuthAccount) {
+    acct.unlink(FlowNames.CollectionPublicPath)
+    let c <- acct.load<@FlowNames.Collection>(from: FlowNames.CollectionStoragePath)
+    destroy c
+  }
+}`
 }

@@ -14,11 +14,15 @@ export default function Home() {
   const [error, setError] = useState('')
 
   const listMyNames = async (user) => {
-    let res = await query({
-      cadence: Scripts.LIST_MY_NAMES,
-      args: (arg, t) => [arg(user?.addr, t.Address)]
-    })
-    console.log(res)
+    try {
+      let res = await query({
+        cadence: Scripts.LIST_MY_NAMES,
+        args: (arg, t) => [arg(user?.addr, t.Address)]
+      })
+      console.log(res)
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   const submitFlowTx = async ({ cadence, args }) => {
@@ -31,7 +35,7 @@ export default function Home() {
       })
       console.log("tx:", transactionId)
       tx(transactionId).subscribe(res => {
-        console.log(res.status)
+        console.log(res)
         setStatus(res.status)
         if (res.errorMessage) {
           setError(res.errorMessage)
@@ -50,6 +54,7 @@ export default function Home() {
         args: (arg, t) => [arg(name, t.String)]
       })
       console.log(res)
+      console.log('authSignatures', res.authSignatures)
     } catch (err) {
       console.info(`[FlowNames] ${name} is not registered yet :)`)
     }
@@ -71,22 +76,27 @@ export default function Home() {
   }
 
   const addSignature = async (name, signature) => {
-    submitFlowTx({
+    await submitFlowTx({
       cadence: Transactions.ADD_SIGNATURE,
       args: (arg, t) => [arg(name, t.String), arg(signature, t.String)]
     })
   }
   const removeSignature = async (name, signature) => {
-    submitFlowTx({
+    await submitFlowTx({
       cadence: Transactions.REMOVE_SIGNATURE,
       args: (arg, t) => [arg(name, t.String), arg(signature, t.String)]
     })
   }
 
   const registerName = async (name, signature, url) => {
-    submitFlowTx({
+    await submitFlowTx({
       cadence: Transactions.REGISTER_NAME,
       args: (arg, t) => [arg(name, t.String), arg(signature, t.String), arg(url, t.String)]
+    })
+  }
+  const resetCollection = async () => {
+    await submitFlowTx({
+      cadence: Transactions.RESET_COLLECTION
     })
   }
   const createCollection = async () => {
@@ -189,6 +199,11 @@ export default function Home() {
           await unauthenticate()
           setStatus("Logged out!")
         }}>Sign out</Button>
+
+        <Button onClick={async () => {
+          await resetCollection()
+          setStatus("collection reset")
+        }}>Reset (only for new contracts)</Button>
 
 
       </main>

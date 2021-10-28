@@ -35,3 +35,6 @@ yarn-error.log*
 
 # vscode
 *.code-workspace
+
+# private keys (for now)
+flow.json
