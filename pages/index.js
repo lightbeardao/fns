@@ -8,6 +8,16 @@ import { useState } from 'react'
 import { Transactions, Scripts } from '../utils/flow'
 import { mutate, query, tx, authenticate, unauthenticate, currentUser } from '@onflow/fcl'
 
+export const signMessage = async (msg) => {
+  const MSG = Buffer.from(msg).toString("hex")
+  try {
+    let c = await currentUser().signUserMessage(MSG)
+    return c
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 
 export default function Home() {
   const [status, setStatus] = useState(-1)
@@ -201,6 +211,16 @@ export default function Home() {
           await unauthenticate()
           setStatus("Logged out!")
         }}>Sign out</Button>
+
+        <Form
+          fields={[
+            { placeholder: 'custom message' },
+          ]}
+          title='Sign Message'
+          callback={async ([msg]) => {
+            let results = await signMessage(msg)
+            console.log("Signed", results)
+          }}>Sign</Form>
 
 
       </main>
