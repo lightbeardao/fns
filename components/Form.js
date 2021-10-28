@@ -8,8 +8,8 @@ function Form({ title, fields, callback, children }) {
     <Collapsible.Root open={open} onOpenChange={setOpen} className="w-full">
       <Collapsible.CollapsibleTrigger>
         {open ?
-          <h1 className="w-full m-2 mx-auto p-2 text-center shadow-lg bg-blue-100 rounded-2xl">{title}</h1> :
-          <h1 className="w-full m-2 mx-auto p-2 text-center shadow-lg bg-blue-50 rounded-2xl">{title}</h1>}
+          <h1 className="w-full m-2 mx-auto p-2 px-4 text-center shadow-lg bg-blue-100 rounded-2xl">{title}</h1> :
+          <h1 className="w-full m-2 mx-auto p-2 px-4 text-center shadow-lg bg-blue-50 rounded-2xl">{title}</h1>}
       </Collapsible.CollapsibleTrigger>
 
       <Collapsible.CollapsibleContent>

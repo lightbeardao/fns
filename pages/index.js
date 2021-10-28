@@ -178,21 +178,24 @@ export default function Home() {
           callback={async ([name, signature]) => {
             await removeSignature(name, signature)
           }}>Revoke</Form>
-        <h1 className="w-full text-xl my-2 mt-4 text-center">Read methods</h1>
 
-        <InputButton
-          placeholder='alice.eth'
-          hint='Look up any Flowname'
-          callback={async (msg) => {
-            await resolveFlowname(msg)
-          }}>Resolve</InputButton>
+        <Form
+          fields={[
+            { placeholder: 'alice.eth' },
+          ]}
+          title='Look up any FlowName'
+          callback={async ([name]) => {
+            await resolveFlowname(name)
+          }}>Resolve</Form>
 
-        <InputButton
-          placeholder='alice.eth'
-          hint='Sign in as Flowname'
-          callback={async (msg) => {
-            await signInAs(msg)
-          }}>Sign in</InputButton>
+        <Form
+          fields={[
+            { placeholder: 'alice.eth' },
+          ]}
+          title='Sign in as Flowname'
+          callback={async ([name]) => {
+            await signInAs(name)
+          }}>Sign in</Form>
 
         <Button onClick={async () => {
           await listMyNames(await currentUser().snapshot())
