@@ -5,7 +5,7 @@ function Form({ title, fields, callback, children }) {
   const [text, setText] = useState(fields.map(i => ""))
   const [open, setOpen] = useState(false);
   return (
-    <Collapsible.Root open={open} onOpenChange={setOpen} className="w-full">
+    <Collapsible.Root open={open} onOpenChange={setOpen}>
       <Collapsible.CollapsibleTrigger>
         {open ?
           <h1 className="w-full m-2 mx-auto p-2 px-4 text-center shadow-lg bg-blue-100 rounded-2xl">{title}</h1> :
