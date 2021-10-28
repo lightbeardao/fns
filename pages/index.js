@@ -19,7 +19,8 @@ export default function Home() {
         cadence: Scripts.LIST_MY_NAMES,
         args: (arg, t) => [arg(user?.addr, t.Address)]
       })
-      console.log(res)
+      console.log("Names in your wallet", res)
+      console.log("Note: Some of these might be invalidated! The FlowNames contract doesn't check individual accounts :)")
     } catch (err) {
       console.log(err)
     }
@@ -53,7 +54,7 @@ export default function Home() {
         cadence: Scripts.LOOKUP_NAME,
         args: (arg, t) => [arg(name, t.String)]
       })
-      console.log(res)
+      console.log('Contents of name', res)
       console.log('authSignatures', res.authSignatures)
     } catch (err) {
       console.info(`[FlowNames] ${name} is not registered yet :)`)
