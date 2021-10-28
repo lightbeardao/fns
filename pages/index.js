@@ -6,12 +6,12 @@ import Form from '../components/Form'
 import { useState } from 'react'
 
 import { Transactions, Scripts } from '../utils/flow'
-import { mutate, query, tx, authenticate, unauthenticate, currentUser } from '@onflow/fcl'
+import { mutate, query, tx, authenticate, unauthenticate, currentUser, verifyUserSignature } from '@onflow/fcl'
+import { signIn, getServerResponse } from '../utils/backend'
 
-export const signMessage = async (msg) => {
-  const MSG = Buffer.from(msg).toString("hex")
+export const signMessage = async (hexMessage) => {
   try {
-    let c = await currentUser().signUserMessage(MSG)
+    let c = await currentUser().signUserMessage(hexMessage)
     return c
   } catch (error) {
     console.log(error)
@@ -192,7 +192,7 @@ export default function Home() {
           fields={[
             { placeholder: 'alice.eth' },
           ]}
-          title='Sign in as Flowname'
+          title='Local Sign in'
           callback={async ([name]) => {
             await signInAs(name)
           }}>Sign in</Form>
@@ -217,13 +217,19 @@ export default function Home() {
 
         <Form
           fields={[
-            { placeholder: 'custom message' },
+            { placeholder: 'name (e.g. alice.eth)' },
           ]}
-          title='Sign Message'
-          callback={async ([msg]) => {
-            let results = await signMessage(msg)
-            console.log("Signed", results)
-          }}>Sign</Form>
+          title='Full Sign in w/ Flowname'
+          callback={async ([login]) => {
+            // here, we pass "login" for interactivity
+            // but actually, we should just pass in what we want to sign in as
+            let { challenge } = await signIn({ name: login })
+            let compositeSignatures = await signMessage(challenge);
+            console.log("Signed", compositeSignatures);
+
+            let loggedIn = await getServerResponse(challenge, compositeSignatures);
+            console.log("Verified?", loggedIn);
+          }}>Login</Form>
 
 
       </main>
