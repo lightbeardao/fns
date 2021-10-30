@@ -1,6 +1,7 @@
 import { useState } from "react"
 import Button from './Button'
 import * as Collapsible from '@radix-ui/react-collapsible'
+import Table from './Table'
 
 export default function Card({ name, signatures }) {
   let url = `/${name}`
@@ -25,17 +26,17 @@ export default function Card({ name, signatures }) {
       </div>
 
       <Collapsible.CollapsibleContent className="mt-6" style={{ position: 'initial' }}>
-        <div className="p-4 flex items-baseline justify-between max-w-md mx-auto border-b-2 border-green-200">
-          <div className="text-green-900">{c == 1 ? "1 signature" : `${c} signatures`}</div>
-          <Button>Add New</Button>
-        </div>
+        <Table fields={
+          [{ name: "Signature" }, { name: "Status" }, { name: "Role" }, { name: "+ new", fn: () => console.log("Add new") }]
+        } data={
+          signatures.map(signature => ({
+            id: signature,
+            status: 'Active', role: 'Admin', functions: {
+              remove: () => { console.log("Remove", signature) },
+            }
+          }))
+        } />
 
-        {signatures.map(s => (
-          <div className="p-4 flex items-baseline justify-between max-w-sm mx-auto">
-            <div>{s}</div>
-            <Button>Remove</Button>
-          </div>
-        ))}
       </Collapsible.CollapsibleContent>
     </Collapsible.Root >
   )
