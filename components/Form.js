@@ -25,7 +25,10 @@ function Form({ title, fields, callback, children }) {
                 }}></input>
               )}
             </div>
-            <Button onClick={async () => await callback(text)}>
+            <Button onClick={async (e) => {
+              e.preventDefault();
+              await callback(text)
+            }}>
               {children}
             </Button>
           </div>
