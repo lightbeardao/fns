@@ -5,17 +5,31 @@
 			"serviceAccount": "emulator-account"
 		}
 	},
-	"contracts": {},
+	"contracts": {
+		"FlowNames": "../contracts/FlowNames.cdc"
+	},
 	"networks": {
 		"emulator": "127.0.0.1:3569",
 		"mainnet": "access.mainnet.nodes.onflow.org:9000",
 		"testnet": "access.devnet.nodes.onflow.org:9000"
 	},
 	"accounts": {
+		"alice": {
+			"address": "0x94485a03d64b0333",
+			"key": "594ac1f8a1174eadb409e526cb62f7bc7ab6b68f4aa7fbfa8a6abf266e4ca141"
+		},
+		"bob": {
+			"address": "0xc2c4dc037c983712",
+			"key": "6788a98929ed788992096a9a46163dae514cd2d41b38b1c9afe3754a6aec3497"
+		},
 		"emulator-account": {
 			"address": "f8d6e0586b0a20c7",
 			"key": "4c5a55cb81b43b2346fadc351b426c7024e0ef39d53ec87feeb147e595cac5bd"
 		}
 	},
-	"deployments": {}
+	"deployments": {
+		"testnet": {
+			"bob": ["FlowNames"]
+		}
+	}
 }

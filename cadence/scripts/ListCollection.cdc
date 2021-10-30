@@ -1,6 +1,6 @@
 import FlowNames from "../contracts/FlowNames.cdc"
 
-pub fun main(addr: Address): {String: [String]} {
+pub fun main(addr: Address): {String: [FlowNames.NamedSignature]} {
   let account = getAccount(addr)
   let ref = account.getCapability<&{FlowNames.CollectionPublic}>(FlowNames.CollectionPublicPath)
               .borrow() ?? panic("Cannot borrow reference")

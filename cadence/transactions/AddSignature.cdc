@@ -1,7 +1,7 @@
 import FlowNames from "../contracts/FlowNames.cdc"
 
 
-transaction(name: String, newSignature: String) {
+transaction(name: String, id: String, newSignature: String) {
   let receiverReference: &FlowNames.Collection{FlowNames.Receiver}
   let providerReference: &FlowNames.Collection{FlowNames.Provider}
 
@@ -16,7 +16,7 @@ transaction(name: String, newSignature: String) {
     let tokenId = self.providerReference.findAuthorizedTokenId(name: name)
     if tokenId != nil {
       let oldToken <- self.providerReference.withdraw(id: tokenId!)
-      let newToken <- oldToken.newToken(signature: newSignature)
+      let newToken <- oldToken.newToken(id: id, signature: newSignature)
       self.receiverReference.deposit(token: <-oldToken)
       self.receiverReference.deposit(token: <-newToken)
     }

@@ -9,12 +9,13 @@ pub fun main(flowName: String): FlowNames.DID {
   LIST_MY_NAMES: `
   import FlowNames from 0xFlowNames
 
-pub fun main(addr: Address): {String: [String]} {
-  let account = getAccount(addr)
-  let ref = account.getCapability<&{FlowNames.CollectionPublic}>(FlowNames.CollectionPublicPath)
-              .borrow() ?? panic("Cannot borrow reference")
-  let dappies = ref.items()
-  return dappies
+  pub fun main(addr: Address): {String: [FlowNames.NamedSignature]} {
+    let account = getAccount(addr)
+    let ref = account.getCapability<&{FlowNames.CollectionPublic}>(FlowNames.CollectionPublicPath)
+                .borrow() ?? panic("Cannot borrow reference")
+    let dappies = ref.items()
+    return dappies
+  }
 }`,
   AUTHORIZED_ON_NAME: `
   import FlowNames from 0xFlowNames
@@ -32,52 +33,63 @@ export const Transactions = {
   CREATE_COLLECTION: `
   import FlowNames from 0xFlowNames
 
-transaction {
-  prepare(acct: AuthAccount) {
-    let collection <- FlowNames.createEmptyCollection()
-    acct.save<@FlowNames.Collection>(<-collection, to: FlowNames.CollectionStoragePath)
-    acct.link<&{FlowNames.CollectionPublic}>(FlowNames.CollectionPublicPath, target: FlowNames.CollectionStoragePath)
+  transaction {
+    prepare(acct: AuthAccount) {
+      // create a collection if user doesn't have one already!
+      if acct.borrow<&FlowNames.Collection>(from: FlowNames.CollectionStoragePath) == nil {
+        let collection <- FlowNames.createEmptyCollection()
+        acct.save<@FlowNames.Collection>(<-collection, to: FlowNames.CollectionStoragePath)
+        acct.link<&{FlowNames.CollectionPublic}>(FlowNames.CollectionPublicPath, target: FlowNames.CollectionStoragePath)
+      }
+    }
   }
-}
   `,
   ADD_SIGNATURE: `
   import FlowNames from 0xFlowNames
 
-transaction(name: String, newSignature: String) {
-  let receiverReference: &FlowNames.Collection{FlowNames.Receiver}
-  let providerReference: &FlowNames.Collection{FlowNames.Provider}
-
-  prepare(acct: AuthAccount) {
-    self.receiverReference = acct.borrow<&FlowNames.Collection>(from: FlowNames.CollectionStoragePath) 
-        ?? panic("Cannot borrow")
-    self.providerReference = acct.borrow<&FlowNames.Collection>(from: FlowNames.CollectionStoragePath) 
-        ?? panic("Cannot borrow")
-  }
-
-  execute {
-    let tokenId = self.providerReference.findAuthorizedTokenId(name: name)
-    if tokenId != nil {
-      let oldToken <- self.providerReference.withdraw(id: tokenId!)
-      let newToken <- oldToken.newToken(signature: newSignature)
-      self.receiverReference.deposit(token: <-oldToken)
-      self.receiverReference.deposit(token: <-newToken)
+  transaction(name: String, id: String, newSignature: String) {
+    let receiverReference: &FlowNames.Collection{FlowNames.Receiver}
+    let providerReference: &FlowNames.Collection{FlowNames.Provider}
+  
+    prepare(acct: AuthAccount) {
+      self.receiverReference = acct.borrow<&FlowNames.Collection>(from: FlowNames.CollectionStoragePath) 
+          ?? panic("Cannot borrow")
+      self.providerReference = acct.borrow<&FlowNames.Collection>(from: FlowNames.CollectionStoragePath) 
+          ?? panic("Cannot borrow")
+    }
+  
+    execute {
+      let tokenId = self.providerReference.findAuthorizedTokenId(name: name)
+      if tokenId != nil {
+        let oldToken <- self.providerReference.withdraw(id: tokenId!)
+        let newToken <- oldToken.newToken(id: id, signature: newSignature)
+        self.receiverReference.deposit(token: <-oldToken)
+        self.receiverReference.deposit(token: <-newToken)
+      }
     }
   }
-}
   `,
   REGISTER_NAME: `
   import FlowNames from 0xFlowNames
   
-transaction(name: String, signature: String, content: String) {
+transaction(name: String, id: String, signature: String, content: String) {
   let receiverReference: &FlowNames.Collection{FlowNames.Receiver}
 
   prepare(acct: AuthAccount) {
+    
+    // create a collection if user doesn't have one already!
+    if acct.borrow<&FlowNames.Collection>(from: FlowNames.CollectionStoragePath) == nil {
+      let collection <- FlowNames.createEmptyCollection()
+      acct.save<@FlowNames.Collection>(<-collection, to: FlowNames.CollectionStoragePath)
+      acct.link<&{FlowNames.CollectionPublic}>(FlowNames.CollectionPublicPath, target: FlowNames.CollectionStoragePath)
+    }
+    
     self.receiverReference = acct.borrow<&FlowNames.Collection>(from: FlowNames.CollectionStoragePath) 
         ?? panic("Cannot borrow")
   }
 
   execute {
-    let newDappy <- FlowNames.registerName(name: name, signature: signature)
+    let newDappy <- FlowNames.registerName(name: name, id: id, signature: signature)
     newDappy.changeDocument(newUrl: content)
     self.receiverReference.deposit(token: <-newDappy)
   }
@@ -126,13 +138,12 @@ transaction(name: String, signature: String) {
 }
   `,
   RESET_COLLECTION: `
-  import FlowNames from 0xOldFlowNames
+  import FlowNames from 0xFlowNames
 
 transaction {
   prepare(acct: AuthAccount) {
     acct.unlink(FlowNames.CollectionPublicPath)
-    let c <- acct.load<@FlowNames.Collection>(from: FlowNames.CollectionStoragePath)
-    destroy c
+    destroy <- acct.load<@FlowNames.Collection>(from: FlowNames.CollectionStoragePath)
   }
 }`
 }

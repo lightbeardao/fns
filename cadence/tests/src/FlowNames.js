@@ -17,27 +17,29 @@ export const createCollection = async (recipient) => {
   await sendTransaction({ name, signers })
 }
 
+// to MAKE a token, you need to have an id + signature
 export const registerName = async (recipient, flowname, signature, content) => {
   const name = "RegisterName"
   const signers = [recipient]
-  const args = [flowname, signature, content]
+  const args = [flowname, signature.id, signature.signature, content]
   await sendTransaction({ name, args, signers })
 }
 
 export const registerEmptyName = async (recipient, flowname, signature) => {
   const name = "RegisterEmptyName"
   const signers = [recipient]
-  const args = [flowname, signature]
+  const args = [flowname, signature.id, signature.signature]
   await sendTransaction({ name, args, signers })
 }
 
 export const addSignature = async (recipient, flowname, signature) => {
   const name = "AddSignature"
   const signers = [recipient]
-  const args = [flowname, signature]
+  const args = [flowname, signature.id, signature.signature]
   await sendTransaction({ name, args, signers })
 }
 
+// to FIND a signature, you only need the signature
 export const giveSignature = async (holder, recipient, flowname, signature) => {
   const name = "GiveSignature"
   const signers = [holder, recipient]

@@ -1,7 +1,11 @@
 pub contract FlowNames {
   
-  // Stores the list of valid signatures that can be used to change a name
-  access(self) var authorizedSignatures: {String: {String: Bool}}
+  // both of these dicts operate on namehashes instead of Strings
+  // but in Flow, I don't think you have custom types
+  
+  // Stores a dict of signature->id pairs for each hashed name
+  access(self) var authorizedSignatures: {String: {String: String}}
+  // Stores the "content" pointer of each namehash
   access(self) var documentUrl: {String: String}
   pub var registerCount: UInt256
 
@@ -14,10 +18,12 @@ pub contract FlowNames {
    */
   pub resource NameToken {
     pub let name: String
+    pub let id: String
     pub let signature: String
 
-    init(name: String, signature: String) {
+    init(name: String,id: String, signature: String) {
       self.name = name
+      self.id = id
       self.signature = signature
     }
 
@@ -28,23 +34,27 @@ pub contract FlowNames {
     pub fun changeDocument(newUrl: String) {
       FlowNames.changeDocument(name: self.name, existingSignature: self.signature, newUrl: newUrl)
     }
-    pub fun duplicate(): @FlowNames.NameToken {
-      return <- FlowNames.addSignature(name: self.name, existingSignature: self.signature, signature: self.signature)
+    pub fun duplicate(id: String): @FlowNames.NameToken {
+      return <- FlowNames.addSignature(name: self.name, existingSignature: self.signature, id: id, signature: self.signature)
     }
-    pub fun newToken(signature: String): @FlowNames.NameToken {
-      return <- FlowNames.addSignature(name: self.name, existingSignature: self.signature, signature: signature)
+    pub fun newToken(id: String, signature: String): @FlowNames.NameToken {
+      return <- FlowNames.addSignature(name: self.name, existingSignature: self.signature, id: id, signature: signature)
     }
     pub fun removeSignature(signature: String): Bool {
-      return FlowNames.removeSignature(name: self.name, existingSignature: self.signature, signature: signature)
+      let c = FlowNames.removeSignature(name: self.name, existingSignature: self.signature, signature: signature)
+      if c != nil {
+        return true
+      }
+      return false
     }
   }
 
   pub struct DID {
     pub let name: String
     pub let content: String?
-    pub let authSignatures: {String: Bool}
+    pub let authSignatures: {String: String}
 
-    init(name: String, content: String?, signatures: {String: Bool}){
+    init(name: String, content: String?, signatures: {String: String}){
       self.name = name
       self.content = content
       self.authSignatures = signatures
@@ -55,7 +65,7 @@ pub contract FlowNames {
     pub fun deposit(token: @NameToken)
     pub fun borrowToken(id: String): &NameToken
     pub fun keys(): [String]
-    pub fun items(): {String: [String]}
+    pub fun items(): {String: [NamedSignature]}
     pub fun findAuthorizedTokenId(name: String): String?
   }
 
@@ -70,6 +80,15 @@ pub contract FlowNames {
     pub fun batchDeposit(collection: @Collection)
   }
 
+  pub struct NamedSignature {
+    pub let id: String
+    pub let signature: String
+
+    init(id: String, signature: String) {
+      self.id = id
+      self.signature = signature
+    }
+  }
   pub resource Collection: CollectionPublic, Provider, Receiver {
     pub var ownedNames: @{String: NameToken}
 
@@ -85,7 +104,7 @@ pub contract FlowNames {
       let authSignatures = FlowNames.getSignatures(name: name)
       for key in self.ownedNames.keys {
         let el = &self.ownedNames[key] as &NameToken
-        if el.name == name && (authSignatures[el.signature] ?? false) {
+        if el.name == name && (authSignatures[el.signature] != nil) {
           return el.key()
         }
       }
@@ -119,14 +138,15 @@ pub contract FlowNames {
     }
 
     // items returns the tokens I have
-    pub fun items(): {String: [String]} {
-      var nameTokens: {String: [String]} = {}
+    pub fun items(): {String: [NamedSignature]} {
+      var nameTokens: {String: [NamedSignature]} = {}
       for key in self.ownedNames.keys {
         let el = &self.ownedNames[key] as &NameToken
+        let c = NamedSignature(id: el.id, signature: el.signature)
         if nameTokens.containsKey(el.name) {
-          nameTokens[el.name]!.append(el.signature)
+          nameTokens[el.name]!.append(c)
         } else {
-          nameTokens.insert(key: el.name, [el.signature])
+          nameTokens.insert(key: el.name, [c])
         }
       }
       return nameTokens
@@ -155,19 +175,19 @@ pub contract FlowNames {
     return <-create self.Collection()
   }
 
-  pub fun registerName(name: String, signature: String): @NameToken {
+  pub fun registerName(name: String, id: String, signature: String): @NameToken {
     pre {
       self.authorizedSignatures[name] == nil : "Flowname is already registered"
     }
-    self.authorizedSignatures[name] = {signature: true}
+    self.authorizedSignatures[name] = {signature: id}
     self.registerCount = self.registerCount + 1
-    return <- create NameToken(name: name, signature: signature)
+    return <- create NameToken(name: name, id: id, signature: signature)
   }
 
   pub fun getDocument(name: String): String? {
     return self.documentUrl[name]
   }
-  pub fun getSignatures(name: String): {String: Bool} {
+  pub fun getSignatures(name: String): {String: String} {
     return self.authorizedSignatures[name] ?? panic("Flowname not found!")
   }
   pub fun getDID(name: String): DID {
@@ -183,23 +203,23 @@ pub contract FlowNames {
     self.documentUrl[name] = newUrl
   }
   
-  access(contract) fun addSignature(name: String, existingSignature: String, signature: String): @FlowNames.NameToken {
+  access(contract) fun addSignature(name: String, existingSignature: String, id: String, signature: String): @FlowNames.NameToken {
     pre {
       self.authorizedSignatures[name]!.containsKey(existingSignature)
     }
-    self.authorizedSignatures[name]!.insert(key: signature, true)
+    self.authorizedSignatures[name]!.insert(key: signature, id)
 
-    return <- create NameToken(name: name, signature: signature)
+    return <- create NameToken(name: name, id: id, signature: signature)
   }
   
-  access(contract) fun removeSignature(name: String, existingSignature: String, signature: String): Bool {
+  access(contract) fun removeSignature(name: String, existingSignature: String, signature: String): String? {
     pre {
       self.authorizedSignatures[name]!.containsKey(existingSignature)
     }
     post {
       !self.authorizedSignatures[name]!.containsKey(signature): "signature should be gone"
     }
-    return self.authorizedSignatures[name]!.remove(key: signature) ?? false
+    return self.authorizedSignatures[name]!.remove(key: signature)
   }
 
   init() {

@@ -34,16 +34,16 @@ describe("FlowNames", () => {
 
       await createCollection(alice)
       await createCollection(bob)
-      await registerName(alice, "alice.eth", "signature 1", "content hash 1")
-      await registerName(alice, "alice2.eth", "signature 1", "content hash 2")
+      await registerName(alice, "alice.eth", { id: "mushroom", signature: "signature 1" }, "content hash 1")
+      await registerName(alice, "alice2.eth", { id: "mushroom", signature: "signature 1" }, "content hash 2")
     });
 
     it("Should list all names", async () => {
       const alice = await getAccountAddress("Alice");
 
       const userNames = await listNames(alice)
-      expect(userNames['alice.eth']).toBe(["signature 1"])
-      expect(userNames['alice2.eth']).toBe(["signature 1"])
+      expect(userNames['alice.eth']).toStrictEqual([{ id: "mushroom", signature: "signature 1" }])
+      expect(userNames['alice2.eth']).toStrictEqual([{ id: "mushroom", signature: "signature 1" }])
     });
 
     it("Should lookup a name", async () => {
@@ -63,13 +63,13 @@ describe("FlowNames", () => {
 
     it("Should be able to add a signature", async () => {
       const alice = await getAccountAddress("Alice");
-      await addSignature(alice, "alice.eth", "signature 2");
+      await addSignature(alice, "alice.eth", { id: "mushroom", signature: "signature 2" });
 
       // on the account
       let keyring = await listNames(alice);
       expect(keyring).toMatchObject({
-        'alice.eth': ["signature 1", "signature 2"],
-        'alice2.eth': ["signature 1"]
+        'alice.eth': [{ id: "mushroom", signature: "signature 1" }, { id: "mushroom", signature: "signature 2" }],
+        'alice2.eth': [{ id: "mushroom", signature: "signature 1" }]
       })
 
       // on the registry
@@ -77,7 +77,7 @@ describe("FlowNames", () => {
       expect(result).toMatchObject({
         name: 'alice.eth',
         content: 'content hash 1',
-        authSignatures: { 'signature 1': true, 'signature 2': true }
+        authSignatures: { 'signature 1': 'mushroom', 'signature 2': 'mushroom' }
       })
     })
 
@@ -93,7 +93,7 @@ describe("FlowNames", () => {
       expect(result).toMatchObject({
         name: 'alice.eth',
         content: 'content hash 1',
-        authSignatures: { 'signature 2': true }
+        authSignatures: { 'signature 2': 'mushroom' }
       })
     })
 
@@ -103,13 +103,13 @@ describe("FlowNames", () => {
       await giveSignature(alice, bob, "alice.eth", "signature 2");
 
       // now bob can use the signature
-      await addSignature(bob, 'alice.eth', 'bob now')
+      await addSignature(bob, 'alice.eth', { id: "mushroom", signature: "bob now" })
 
       let result = await getDID('alice.eth');
       expect(result).toMatchObject({
         name: 'alice.eth',
         content: 'content hash 1',
-        authSignatures: { 'signature 2': true, 'bob now': true }
+        authSignatures: { 'signature 2': "mushroom", "bob now": "mushroom" }
       })
     })
 
@@ -117,7 +117,7 @@ describe("FlowNames", () => {
       const alice = await getAccountAddress("Alice");
 
       try {
-        await addSignature(alice, "bob.eth", "signature 2");
+        await addSignature(alice, "bob.eth", { id: "goofball", signature: "signature 2" });
         expect(1).toBe(0)
       } catch {
         // unchanged
