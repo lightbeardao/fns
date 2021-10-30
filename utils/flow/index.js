@@ -93,6 +93,35 @@ transaction(name: String, id: String, signature: String, content: String) {
     self.receiverReference.deposit(token: <-newDappy)
   }
 }`,
+REGISTER_DID: `
+import FlowNames from 0xFlowNames
+
+transaction(name: String, content: String) {
+let receiverReference: &FlowNames.Collection{FlowNames.Receiver}
+let publicKey: String
+
+prepare(acct: AuthAccount) {
+  
+  // create a collection if user doesn't have one already!
+  if acct.borrow<&FlowNames.Collection>(from: FlowNames.CollectionStoragePath) == nil {
+    let collection <- FlowNames.createEmptyCollection()
+    acct.save<@FlowNames.Collection>(<-collection, to: FlowNames.CollectionStoragePath)
+    acct.link<&{FlowNames.CollectionPublic}>(FlowNames.CollectionPublicPath, target: FlowNames.CollectionStoragePath)
+  }
+  
+  self.receiverReference = acct.borrow<&FlowNames.Collection>(from: FlowNames.CollectionStoragePath) 
+      ?? panic("Cannot borrow")
+
+  let acctKey = acct.keys.get(keyIndex: 0)!;
+  self.publicKey = String.encodeHex(acctKey.publicKey.publicKey)
+}
+
+execute {
+  let newDappy <- FlowNames.registerName(name: name, id: "default", signature: self.publicKey)
+  newDappy.changeDocument(newUrl: content)
+  self.receiverReference.deposit(token: <-newDappy)
+}
+}`,
   REMOVE_SIGNATURE: `
   import FlowNames from 0xFlowNames
 

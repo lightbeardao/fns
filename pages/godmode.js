@@ -18,7 +18,7 @@ export const signMessage = async (hexMessage) => {
 
 
 export default function Home() {
-  const [status, setStatus] = useState(-1)
+  const [status, setStatus] = useState('Welcome!')
   const [error, setError] = useState('')
 
   const listMyNames = async (user) => {
@@ -27,8 +27,10 @@ export default function Home() {
         cadence: Scripts.LIST_MY_NAMES,
         args: (arg, t) => [arg(user?.addr, t.Address)]
       })
-      console.log("Names in your wallet", res)
-      console.log("Note: Some of these might be invalidated! The FlowNames contract doesn't check individual accounts :)")
+      console.log("Tokens you own:")
+      for (let [name, tokens] of Object.entries(res)) {
+        console.log(name, tokens)
+      }
     } catch (err) {
       console.log(err)
     }
