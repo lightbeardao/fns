@@ -48,17 +48,10 @@ export default function Home({ data }) {
   )
 }
 
-
-const environment = "prod";
-let rootAddress = {
-  dev: "http://localhost:3000",
-  prod: "https://flownames.netlify.app"
-}
-
 // This gets called on every request
 export async function getServerSideProps() {
   // Fetch data from external API
-  const res = await fetch(`${rootAddress[environment]}/api/hello`)
+  const res = await fetch(`${NEXT_PUBLIC_API}/api/hello`)
   const data = await res.json()
 
   // Pass data to the page via props
