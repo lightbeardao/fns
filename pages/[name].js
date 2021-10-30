@@ -1,12 +1,17 @@
 import Head from 'next/head'
 import BackgroundGradient from '../components/background/Gradient'
 import Header from '../components/background/Header'
+import { useRouter } from 'next/router'
 
-export default function Home() {
+export default function Home({ data }) {
+  const router = useRouter()
+  const { name } = router.query
+  const emoji = '🦄'
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Head>
-        <title>Name</title>
+        <title>{name} - FlowNames</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -15,7 +20,7 @@ export default function Home() {
 
       <main id="start-of-content" class="w-full mx-auto mt-6 mb-16 sm:mt-8 px-2.5 lg:px-7 max-w-screen-md">
         <div class="flex justify-between px-2.5 lg:px-0 items-center">
-          <h1 class="text-gray-700 text-2xl font-normal">Projects</h1>
+          <h1 class="text-gray-700 text-2xl font-normal">{emoji} {name}</h1>
           <div class="flex items-stretch gap-4">
             <button class="transition inline-block focus-visible:ring-2 focus-visible:ring-black focus:outline-none py-2.5 px-6 text-base text-gray-600 font-medium  border border-gray-300 rounded-xl hover:shadow hidden lg:inline h-full" alternate="true" title="Create a new playground" >New Playground</button>
 
@@ -41,4 +46,16 @@ export default function Home() {
       </main>
     </div>
   )
+}
+
+
+
+// This gets called on every request
+export async function getServerSideProps() {
+  // Fetch data from external API
+  const res = await fetch(`http://localhost:3000/api/hello`)
+  const data = await res.json()
+
+  // Pass data to the page via props
+  return { props: { data } }
 }
