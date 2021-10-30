@@ -9,8 +9,10 @@ const node_api = USE_LOCAL ? "http://localhost:8080" : "https://access-testnet.o
 const myConfig = {
   "accessNode.api": node_api,
   "discovery.wallet": wallet_api,
-  "0xFlowNames": '0xc2c4dc037c983712',
-  "0xOldFlowNames": '0x94485a03d64b0333'
+  "0xFlowNames": '0x862af877b1178154',
+  "0xOldFlowNames": '0xc2c4dc037c983712'
+  // "0xFlowNames": '0xc2c4dc037c983712',
+  // "0xOldFlowNames": '0x94485a03d64b0333'
 }
 
 console.log('Config:', myConfig)

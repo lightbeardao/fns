@@ -15,8 +15,7 @@ pub fun main(flowName: String): FlowNames.DID {
                 .borrow() ?? panic("Cannot borrow reference")
     let dappies = ref.items()
     return dappies
-  }
-}`,
+  }`,
   AUTHORIZED_ON_NAME: `
   import FlowNames from 0xFlowNames
 
@@ -138,7 +137,7 @@ transaction(name: String, signature: String) {
 }
   `,
   RESET_COLLECTION: `
-  import FlowNames from 0xFlowNames
+  import FlowNames from 0xOldFlowNames
 
 transaction {
   prepare(acct: AuthAccount) {

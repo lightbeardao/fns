@@ -84,10 +84,10 @@ export default function Home() {
     }
   }
 
-  const addSignature = async (name, signature) => {
+  const addSignature = async (name, id, signature) => {
     await submitFlowTx({
       cadence: Transactions.ADD_SIGNATURE,
-      args: (arg, t) => [arg(name, t.String), arg(signature, t.String)]
+      args: (arg, t) => [arg(name, t.String), arg(id, t.String), arg(signature, t.String)]
     })
   }
   const removeSignature = async (name, signature) => {
@@ -97,10 +97,10 @@ export default function Home() {
     })
   }
 
-  const registerName = async (name, signature, url) => {
+  const registerName = async (name, id, signature, url) => {
     await submitFlowTx({
       cadence: Transactions.REGISTER_NAME,
-      args: (arg, t) => [arg(name, t.String), arg(signature, t.String), arg(url, t.String)]
+      args: (arg, t) => [arg(name, t.String), arg(id, t.String), arg(signature, t.String), arg(url, t.String)]
     })
   }
   const resetCollection = async () => {
@@ -136,7 +136,7 @@ export default function Home() {
 
       <main className="border rounded-2xl mx-auto max-w-xl p-4 flex flex-col gap-2">
         <p><strong>Status: </strong>{status === 3 ? "almost done..." : status === 4 ? "done" : typeof (status) === 'string' ? status : "processing..."}</p>
-        {error && <p class="text-red-700">{error}</p>}
+        {error && <p className="text-red-700">{error}</p>}
 
         <Button onClick={async () => {
           await createCollection()
@@ -150,17 +150,19 @@ export default function Home() {
           ]}
           title='Register a Flowname'
           callback={async ([name, signature, content]) => {
-            await registerName(name, signature, content)
+            let id = "default"
+            await registerName(name, id, signature, content)
           }}>Register</Form>
 
         <Form
           fields={[
             { placeholder: 'name you own (e.g. alice.eth)' },
+            { placeholder: 'key name (e.g. key-1)' },
             { placeholder: 'signature' },
           ]}
           title='Add additional signature'
-          callback={async ([name, signature]) => {
-            await addSignature(name, signature)
+          callback={async ([name, id, signature]) => {
+            await addSignature(name, id, signature)
           }}>Add Signature</Form>
 
         <Form
@@ -206,6 +208,10 @@ export default function Home() {
           await unauthenticate()
           setStatus("Logged out!")
         }}>Sign out</Button>
+
+        <Button onClick={async () => {
+          await resetCollection()
+        }}>Destroy collection</Button>
 
         <Form
           fields={[
