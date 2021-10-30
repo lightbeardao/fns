@@ -1,7 +1,5 @@
-import Head from 'next/head'
-import Image from 'next/image'
 import Button from '../components/Button'
-import InputButton from '../components/InputButton'
+import Layout from '../components/Layout'
 import Form from '../components/Form'
 import { useState } from 'react'
 
@@ -134,13 +132,9 @@ export default function Home() {
   }
 
   return (
-    <div className="" style={{ minHeight: '95vh' }}>
-      <Head>
-        <title>Flow Name Service</title>
-        <meta name="description" content="Your decentralized ID provider" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <main className="border rounded-2xl mx-auto max-w-xl p-4 mt-48 flex flex-col gap-2">
+    <Layout>
+
+      <main className="border rounded-2xl mx-auto max-w-xl p-4 flex flex-col gap-2">
         <p><strong>Status: </strong>{status === 3 ? "almost done..." : status === 4 ? "done" : typeof (status) === 'string' ? status : "processing..."}</p>
         {error && <p class="text-red-700">{error}</p>}
 
@@ -208,8 +202,6 @@ export default function Home() {
           setStatus("Logged in")
         }}>Get current user (or sign in)</Button>
 
-        <h1 className="w-full text-xl my-2 mt-4 text-center"></h1>
-
         <Button onClick={async () => {
           await unauthenticate()
           setStatus("Logged out!")
@@ -233,7 +225,6 @@ export default function Home() {
 
 
       </main>
-    </div>
-
+    </Layout>
   )
 }

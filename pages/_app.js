@@ -1,12 +1,16 @@
 import '../styles/globals.css'
 
 import { IdProvider } from '@radix-ui/react-id';
+import AuthProvider from '../providers/AuthProvider';
+
 import '../utils/config'
 
 function MyApp({ Component, pageProps }) {
   return (
     <IdProvider>
-      <Component {...pageProps} />
+      <AuthProvider>
+        <Component {...pageProps} />
+      </AuthProvider>
     </IdProvider>
   )
 }

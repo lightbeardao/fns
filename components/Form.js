@@ -1,4 +1,5 @@
 import { useState } from "react"
+import Button from './Button'
 import * as Collapsible from '@radix-ui/react-collapsible'
 
 function Form({ title, fields, callback, children }) {
@@ -13,7 +14,7 @@ function Form({ title, fields, callback, children }) {
       </Collapsible.CollapsibleTrigger>
 
       <Collapsible.CollapsibleContent>
-        <form className="bg-white rounded p-4" autoComplete="off">
+        <form className="rounded p-4" autoComplete="off">
           <div className="flex justify-between gap-4 items-start">
             <div className="flex flex-col gap-1" style={{ flex: 2 }}>
               {fields.map(({ placeholder }, i) =>
@@ -24,9 +25,9 @@ function Form({ title, fields, callback, children }) {
                 }}></input>
               )}
             </div>
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex-1" type="button" onClick={async () => await callback(text)}>
+            <Button onClick={async () => await callback(text)}>
               {children}
-            </button>
+            </Button>
           </div>
         </form >
       </Collapsible.CollapsibleContent>

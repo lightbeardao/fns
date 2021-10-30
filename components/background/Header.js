@@ -2,7 +2,7 @@ export default function Header() {
     return (
         <header class="text-gray-500 w-full h-12 lg:h-20 px-3 lg:px-14 relative flex justify-between items-center mb-12 ">
             <p class="flex items-center text-sm">
-                <a href="/projects" title="Go to Projects" class="flex items-center flex-shrink-0">
+                <a href="/" title="Go to Home" class="flex items-center flex-shrink-0">
                     <img src="/img/logo3.svg" alt="deno logo" class="w-7 h-7 flex-shrink-0" />
                     <span class="hidden sm:inline ml-3 text-xs bg-gray-200 py-0.5 px-2 rounded-md">BETA 3</span>
                 </a>
