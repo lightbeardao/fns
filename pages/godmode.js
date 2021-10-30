@@ -138,9 +138,13 @@ export default function Home() {
         <p><strong>Status: </strong>{status === 3 ? "almost done..." : status === 4 ? "done" : typeof (status) === 'string' ? status : "processing..."}</p>
         {error && <p className="text-red-700">{error}</p>}
 
-        <Button onClick={async () => {
+        {/* <Button onClick={async () => {
           await createCollection()
         }} >Create Collection</Button>
+
+        <Button onClick={async () => {
+          await resetCollection()
+        }}>Destroy collection</Button> */}
 
         <Form
           fields={[
@@ -209,9 +213,6 @@ export default function Home() {
           setStatus("Logged out!")
         }}>Sign out</Button>
 
-        <Button onClick={async () => {
-          await resetCollection()
-        }}>Destroy collection</Button>
 
         <Form
           fields={[
