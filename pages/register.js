@@ -4,9 +4,32 @@ import Layout from '../components/Layout'
 import { mutate, query, tx, authenticate, unauthenticate, currentUser, verifyUserSignature } from '@onflow/fcl'
 import { useAuth } from '../providers/AuthProvider'
 import { Transactions, Scripts } from '../utils/flow'
-import { UndrawAddUser } from 'react-undraw-illustrations'
 import cx from 'classnames'
 import { getDID } from '../utils/did-helper'
+
+
+const RegistrationPanel = ({ name }) => {
+  let did = getDID(name);
+  let [status, setStatus] = useState(null);
+
+  return (
+    <div class="flex items-baseline gap-6">
+      <h1 className="text-gray-400 text-2xl font-bold">{name} <span className="text-gray-500">is available</span></h1>
+      <Button onClick={async () => {
+        try {
+          let res = await query({
+            cadence: Scripts.LOOKUP_NAME,
+            args: (arg, t) => [arg(did, t.String)]
+          })
+          console.log("seems like it's registered", res)
+        } catch (err) {
+          // good to go!
+          console.log("not registered yet!")
+        }
+      }}>Register</Button>
+    </div>
+  )
+}
 
 const EmptyState = () => {
   let [text, setText] = useState('');
@@ -14,10 +37,23 @@ const EmptyState = () => {
   let [error, seterror] = useState(null);
   let placeholder = 'Your username'
 
-  useEffect(() => {
+  useEffect(async () => {
     try {
-      setDID(getDID(text))
-      seterror(null);
+      let did = getDID(text)
+      setDID(did)
+
+      try {
+        let res = await query({
+          cadence: Scripts.LOOKUP_NAME,
+          args: (arg, t) => [arg(did, t.String)]
+        })
+        console.log(`${text}`, res)
+        seterror(`Whoa! You found ${text} (registered)`)
+      } catch (err) {
+        // good to go!
+        console.log(`${text} - not registered yet!`)
+        seterror(null);
+      }
     } catch (e) {
       if (text.includes(' ')) {
         seterror("FlowNames says: no spaces!")
@@ -34,7 +70,6 @@ const EmptyState = () => {
       <form className="w-full rounded p-4 flex items-center gap-4" autoComplete="off">
         <div className="w-full" style={{ flexGrow: 1 }}>
           <input className={cx(error ? "text-red-300" : "text-green-300", "text-center text-3xl font-semibold bg-gradient-to-r from-gray-50 to-white appearance-none border-b-2 border-blue-50 rounded py-6 px-3 leading-tight focus:outline-none focus:shadow-outline w-full")} id="text" type="text" placeholder={placeholder} key={placeholder} value={text} onChange={e => {
-            console.log(e.target.value)
             setText(e.target.value)
           }}></input>
         </div>
@@ -45,10 +80,7 @@ const EmptyState = () => {
           <p className="text-gray-400 font-bold">{error}</p>
         </div>
         :
-        <div class="flex items-baseline gap-6">
-          <h1 className="text-gray-400 text-2xl font-bold">{text} <span className="text-gray-500">is available</span></h1>
-          <Button>Register</Button>
-        </div>
+        <RegistrationPanel name={text} />
       }
     </div>
   )
