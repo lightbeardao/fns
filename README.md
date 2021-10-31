@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://flownames.netlify.app/godmode">
-    <img src="./public/banner.png" width="100%">
+    <img src="./public/banner_halloween.png" width="600px">
     <h1 align="center">Welcome to Flow Name Service</h1>
   </a>
 </p>

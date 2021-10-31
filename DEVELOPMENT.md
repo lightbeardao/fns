@@ -1,3 +1,15 @@
+<br />
+<div align="center">
+  <a href="">
+    <img src="./public/banner_halloween.png" alt="Logo" width="600" height="auto">
+  </a>
+  <p align="center"> <br />
+    <h1 align="center">Welcome, Open Source Contributors!</h1>
+    <a href="https://zed-io.github.io/flow-swift">SDK Specifications</a> ·
+    <a href="">Contribute</a> ·
+    <a href="">Report a Bug</a>
+  </p>
+</div><br />
 
 ## Getting Started
 
