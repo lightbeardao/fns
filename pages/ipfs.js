@@ -83,6 +83,9 @@ async function parseDID(doc) {
         let result = await ipfs.cat(pointer.cid)
         result = JSON.parse(result);
         console.log('DID Metadata (Stored on IPFS)', result)
+
+        // just append it to the DID document
+        c = { ...c, ...result }
         break;
       default:
         console.log("Unrecognized content type:", type)
@@ -171,7 +174,6 @@ export default function Home() {
     }
   }
 
-
   return (
     <Layout title="ipfs">
       <main className="border rounded-2xl mx-auto max-w-xl p-4 flex flex-col gap-2">
@@ -187,7 +189,7 @@ export default function Home() {
             let did = name2did(name)
             let res = await resolveFlowname(did);
             let doc = await parseDID(res)
-            console.log(`${name} => DID Document`, doc)
+            console.log(`${name} => resolved DID Document`, doc)
           }}>Resolve DID</Form>
 
         <Form
@@ -217,6 +219,7 @@ export default function Home() {
             }
           }}>Save IPFS Content</Form>
 
+        <a href="/login" className="text-lg mt-4 p-2 text-indigo-600 hover:text-indigo-400">Alright. Ready to log in with your DID?</a>
       </main>
     </Layout >
 
