@@ -9,7 +9,7 @@ export default function Card({ name, signatures }) {
   let c = signatures?.length;
 
   return (
-    <Collapsible.Root open={open} onOpenChange={setOpen} key={name} className="min-w-full flex flex-col w-full bg-white rounded-2xl transition shadow-slight hover:shadow-lg backdrop-filter backdrop-blur-3xl p-4 lg:p-8 mt-4">
+    <Collapsible.Root open={open} onOpenChange={setOpen} className="min-w-full flex flex-col w-full bg-white rounded-2xl transition shadow-slight hover:shadow-lg backdrop-filter backdrop-blur-3xl p-4 lg:p-8 mt-4">
       <div className="flex flex-col lg:flex-row lg:items-center gap-6" href={url}>
         <div className="flex items-center">
           <img className="h-14 w-14 mr-6 lg:mr-8" src="/img/avatars/1.png" alt="Project Avatar of 8a71da08-6c11-47ab-a25a-24f4b2ebec58" />

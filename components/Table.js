@@ -61,7 +61,7 @@ export default function Example({ fields, data }) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{person.role}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {Object.entries(person.functions).map(([fName, f]) => (
-                        <a href="#" onClick={f} className="mr-2 text-indigo-600 hover:text-indigo-900">
+                        <a href="#" onClick={f} key={fName} className="mr-2 text-indigo-600 hover:text-indigo-900">
                           {fName}
                         </a>
                       ))}

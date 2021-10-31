@@ -93,11 +93,11 @@ export default function Home() {
       </div>
 
       <div className="mt-4">
-        <div>
-          {Object.entries(names).map(([key, value]) => (
+        {Object.entries(names).map(([key, value]) => (
+          <div key={key}>
             <Card name={key} signatures={value} />
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </>
   )

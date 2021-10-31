@@ -18,7 +18,7 @@ function Form({ title, fields, callback, children }) {
           <div className="flex justify-between gap-4 items-start">
             <div className="flex flex-col gap-1" style={{ flex: 2 }}>
               {fields.map(({ placeholder }, i) =>
-                <input className="appearance-none border-b-2 border-blue-50 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline w-full" id="text" type="text" data={i} placeholder={placeholder} value={text[i]} onChange={e => {
+                <input className="appearance-none border-b-2 border-blue-50 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline w-full" id="text" type="text" data={i} placeholder={placeholder} key={placeholder} value={text[i]} onChange={e => {
                   let c = [...text];
                   c[i] = e.target.value;
                   setText(c)
