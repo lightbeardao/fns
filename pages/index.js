@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Button from '../components/Button'
 import Card from '../components/Card'
 import Layout from '../components/Layout'
+import Link from 'next/Link'
 import { mutate, query, tx, authenticate, unauthenticate, currentUser, verifyUserSignature } from '@onflow/fcl'
 import { useAuth } from '../providers/AuthProvider'
 import { Transactions, Scripts } from '../utils/flow'
@@ -19,7 +20,9 @@ const EmptyState = () => {
       height='250px'
     />
     <h1 className="text-gray-700 text-2xl font-bold">Welcome to FlowNames!</h1>
-    <Button>Register your first name</Button>
+    <Link href="/register">
+      <Button>Register your first name</Button>
+    </Link>
   </div>
 }
 
@@ -42,7 +45,7 @@ export default function Home() {
         cadence: Scripts.LIST_MY_NAMES,
         args: (arg, t) => [arg(user?.addr, t.Address)]
       })
-      setNames(res)
+      setNames(null)
     } catch (err) {
       console.log(err)
     }

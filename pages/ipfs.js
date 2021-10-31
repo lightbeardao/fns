@@ -1,11 +1,10 @@
 import Form from '../components/Form'
 import Layout from '../components/Layout'
 import { useState } from 'react'
-import assert from 'assert'
-import Head from 'next/head'
+import Link from 'next/Link'
 import { Transactions, Scripts } from '../utils/flow'
 import { mutate, query, tx, authenticate, unauthenticate, currentUser, verifyUserSignature } from '@onflow/fcl'
-import {getDID} from '../utils/did-helper'
+import { getDID } from '../utils/did-helper'
 
 import IPFS from 'nano-ipfs-store'
 
@@ -211,7 +210,9 @@ export default function Home() {
             }
           }}>Save IPFS Content</Form>
 
-        <a href="/" className="text-lg mt-4 p-2 text-indigo-600 hover:text-indigo-400">Alright. Ready to log in with your DID?</a>
+        <Link href="/">
+          <a className="text-lg mt-4 p-2 text-indigo-600 hover:text-indigo-400">Alright. Ready to log in with your DID?</a>
+        </Link>
       </main>
     </Layout >
 

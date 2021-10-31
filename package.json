@@ -12,6 +12,7 @@
     "@onflow/types": "^0.0.5",
     "@radix-ui/react-collapsible": "^0.1.1",
     "@radix-ui/react-id": "^0.1.1",
+    "classnames": "^2.3.1",
     "eth-ens-namehash": "^2.0.8",
     "get-random-emoji": "^1.0.0",
     "nano-ipfs-store": "^0.1.3",

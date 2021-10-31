@@ -1,17 +1,26 @@
+import Link from 'next/link'
+
 export default function Header() {
     return (
         <header className="text-gray-500 w-full h-12 lg:h-20 px-3 lg:px-14 relative flex justify-between items-center mb-12 ">
             <p className="flex items-center text-sm">
-                <a href="/" title="Go to Home" className="flex items-center flex-shrink-0">
-                    <img src="/img/logo3.svg" alt="deno logo" className="w-7 h-7 flex-shrink-0" />
-                    <span className="hidden sm:inline ml-3 text-xs bg-gray-200 py-0.5 px-2 rounded-md">BETA {process.env.NEXT_PUBLIC_VERSION}</span>
-                </a>
+                <Link href="/">
+                    <a title="Go to Home" className="flex items-center flex-shrink-0">
+                        <img src="/img/logo3.svg" alt="deno logo" className="w-7 h-7 flex-shrink-0" />
+                        <span className="hidden sm:inline ml-3 text-xs bg-gray-200 py-0.5 px-2 rounded-md">BETA {process.env.NEXT_PUBLIC_VERSION}</span>
+                    </a>
+                </Link>
                 <span className="mx-2 lg:mx-4 opacity-50">/</span>
                 <span className="font-medium opacity-50 last:opacity-100 whitespace-nowrap">mwufi</span>
             </p>
 
             <div className="hidden lg:flex items-center space-x-8">
-                <button textclass="text-sm text-gray-500" type="button" className="focus-visible:ring-2 focus-visible:ring-black focus:outline-none hover:underline  text-sm text-gray-500">+&nbsp;&nbsp;New</button>
+                <Link href="/register">
+                    <a textclass="text-sm text-gray-500" className="focus-visible:ring-2 focus-visible:ring-black focus:outline-none hover:underline text-sm text-gray-500">+ New</a>
+                </Link>
+                <Link href="/ipfs">
+                    <a textclass="text-sm text-gray-500" className="focus-visible:ring-2 focus-visible:ring-black focus:outline-none hover:underline text-sm text-gray-500">DID Playground</a>
+                </Link>
 
                 <a href={process.env.NEXT_PUBLIC_FEEDBACK_SITE} textclass="text-sm text-gray-500" external="true" target="_blank" rel="noopener noreferrer" className="focus-visible:ring-2 focus-visible:ring-black focus:outline-none hover:underline  text-sm text-gray-500">Feedback</a>
 
