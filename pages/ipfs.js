@@ -46,9 +46,11 @@ function name2did(name) {
   return did
 }
 
-async function saveToIPFS(content) {
+async function uploadMetadata(metadata) {
   let ipfs = IPFS.at("https://ipfs.infura.io:5001");
 
+  // metadata has to be an object
+  let content = JSON.stringify(metadata)
   console.log("[ipfs] Storing in IPFS", content)
   let cid = await ipfs.add(content)
   console.log("[ipfs]", cid)
@@ -78,10 +80,9 @@ async function parseDID(doc) {
     switch (type) {
       case "ipfs":
         let ipfs = IPFS.at("https://ipfs.infura.io:5001");
-        console.log("Let's retrieve this pointer from IPFS...")
-        console.log('->', pointer.cid)
         let result = await ipfs.cat(pointer.cid)
-        console.log('->', result)
+        result = JSON.parse(result);
+        console.log('DID Metadata (Stored on IPFS)', result)
         break;
       default:
         console.log("Unrecognized content type:", type)
@@ -113,19 +114,38 @@ export default function Home() {
     }
   }
 
-  // by default, DIDs are FlowNames
-  // with id: default, signature: (publicKey)
-  const registerDid = async (name, url) => {
+
+  // Create a DID
+  // 1. Store data on IPFS
+  // 2. Create FlowName with id: default, signature: (publicKey),
+  // and content: pointer to data
+  const registerDid = async (name, metadata) => {
+    let cid = await uploadMetadata(metadata)
+    let embeddedContent = JSON.stringify({
+      type: "ipfs",
+      cid
+    })
+
     await submitFlowTx({
       cadence: Transactions.REGISTER_DID,
-      args: (arg, t) => [arg(name, t.String), arg(url, t.String)]
+      args: (arg, t) => [arg(name, t.String), arg(embeddedContent, t.String)]
     })
   }
 
-  const changeDocument = async (name, url) => {
+  // Updating a DID
+  // 1. Store data on IPFS
+  // 2. Update pointer in Flow
+  const updateMetadata = async (name, metadata) => {
+    let cid = await uploadMetadata(metadata);
+    console.log("[FlowNames] Storing IPFS pointer on Flow")
+    let embeddedContent = JSON.stringify({
+      type: "ipfs",
+      cid
+    })
+
     await submitFlowTx({
       cadence: Transactions.CHANGE_DOCUMENT,
-      args: (arg, t) => [arg(name, t.String), arg(url, t.String)]
+      args: (arg, t) => [arg(name, t.String), arg(embeddedContent, t.String)]
     })
   }
 
@@ -138,6 +158,7 @@ export default function Home() {
         limit: 100
       })
       console.log("tx:", transactionId)
+      console.log("You'll see 4 updates... status: 4 means your transaction is finished, but testnet takes a while! (~20s)")
       tx(transactionId).subscribe(res => {
         console.log(res)
         setStatus(res.status)
@@ -166,7 +187,7 @@ export default function Home() {
             let did = name2did(name)
             let res = await resolveFlowname(did);
             let doc = await parseDID(res)
-            console.log(doc)
+            console.log(`${name} => DID Document`, doc)
           }}>Resolve DID</Form>
 
         <Form
@@ -176,26 +197,23 @@ export default function Home() {
           title='Register DID'
           callback={async ([name]) => {
             let did = name2did(name)
-            await registerDid(did, "nothing");
+            await registerDid(did, { services: [] });
           }}>Register</Form>
 
         <Form
           fields={[
             { placeholder: 'ENS-type name (e.g. alice.flow)' },
-            { placeholder: 'content' },
+            { placeholder: 'metadata (has to be valid JSON)' },
           ]}
           title='Set Metadata'
           callback={async ([name, content]) => {
             let did = name2did(name)
-
-            // check that it parses
             try {
-              let c = JSON.stringify(JSON.parse(content));
-              let cid = await saveToIPFS(c);
-              console.log("[FlowNames] Storing IPFS pointer on Flow")
-              await changeDocument(did, JSON.stringify({ type: "ipfs", cid }));
+              // check that it parses
+              let metadata = JSON.parse(content);
+              await updateMetadata(did, metadata);
             } catch {
-              console.error("JSON content only")
+              console.error("Please double check your metadata")
             }
           }}>Save IPFS Content</Form>
 
