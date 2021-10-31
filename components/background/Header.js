@@ -26,7 +26,11 @@ export default function Header() {
 
                 <a href={process.env.NEXT_PUBLIC_DOCS_SITE} textclass="text-sm text-gray-500" className="focus-visible:ring-2 focus-visible:ring-black focus:outline-none hover:underline  text-sm text-gray-500">Docs</a>
 
-                <img src="https://avatars.githubusercontent.com/u/30219253?v=4" alt="Zen Tang avatar image" className="rounded-full w-7 h-7 " />
+                <Link href="/account">
+                    <a>
+                        <img src="https://avatars.githubusercontent.com/u/30219253?v=4" alt="Zen Tang avatar image" className="rounded-full w-7 h-7 " />
+                    </a>
+                </Link>
             </div>
 
             <button aria-label="Navigation Menu Toggle" className="h-6 focus-visible:ring-2 focus-visible:ring-black focus:outline-none transition  text-black hover:text-gray-500 flex flex-gap-x-2 items-center justify-center pl-4 inline-block lg:hidden text-gray-400">
