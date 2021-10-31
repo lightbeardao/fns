@@ -211,7 +211,7 @@ export default function Home() {
             }
           }}>Save IPFS Content</Form>
 
-        <a href="/login" className="text-lg mt-4 p-2 text-indigo-600 hover:text-indigo-400">Alright. Ready to log in with your DID?</a>
+        <a href="/" className="text-lg mt-4 p-2 text-indigo-600 hover:text-indigo-400">Alright. Ready to log in with your DID?</a>
       </main>
     </Layout >
 
