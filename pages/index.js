@@ -106,7 +106,7 @@ export default function Home() {
   }, [])
 
   return (
-    <Layout title="New FlowName">
+    <Layout title="Welcome to FlowNames">
       <main id="start-of-content" className="w-full mx-auto mt-6 mb-16 sm:mt-8 px-2.5 lg:px-7 max-w-screen-md">
         {names ? <Content names={names} /> : <EmptyState />}
       </main>
