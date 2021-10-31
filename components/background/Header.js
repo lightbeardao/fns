@@ -4,7 +4,7 @@ export default function Header() {
             <p className="flex items-center text-sm">
                 <a href="/" title="Go to Home" className="flex items-center flex-shrink-0">
                     <img src="/img/logo3.svg" alt="deno logo" className="w-7 h-7 flex-shrink-0" />
-                    <span className="hidden sm:inline ml-3 text-xs bg-gray-200 py-0.5 px-2 rounded-md">BETA 3</span>
+                    <span className="hidden sm:inline ml-3 text-xs bg-gray-200 py-0.5 px-2 rounded-md">BETA {process.env.NEXT_PUBLIC_VERSION}</span>
                 </a>
                 <span className="mx-2 lg:mx-4 opacity-50">/</span>
                 <span className="font-medium opacity-50 last:opacity-100 whitespace-nowrap">mwufi</span>
@@ -13,13 +13,11 @@ export default function Header() {
             <div className="hidden lg:flex items-center space-x-8">
                 <button textclass="text-sm text-gray-500" type="button" className="focus-visible:ring-2 focus-visible:ring-black focus:outline-none hover:underline  text-sm text-gray-500">+&nbsp;&nbsp;New</button>
 
-                <a href="https://github.com/denoland/deploy_feedback" textclass="text-sm text-gray-500" external="true" target="_blank" rel="noopener noreferrer" className="focus-visible:ring-2 focus-visible:ring-black focus:outline-none hover:underline  text-sm text-gray-500">Feedback</a>
+                <a href={process.env.NEXT_PUBLIC_FEEDBACK_SITE} textclass="text-sm text-gray-500" external="true" target="_blank" rel="noopener noreferrer" className="focus-visible:ring-2 focus-visible:ring-black focus:outline-none hover:underline  text-sm text-gray-500">Feedback</a>
 
-                <a href="https://deno.com/deploy/docs" textclass="text-sm text-gray-500" className="focus-visible:ring-2 focus-visible:ring-black focus:outline-none hover:underline  text-sm text-gray-500">Docs</a>
+                <a href={process.env.NEXT_PUBLIC_DOCS_SITE} textclass="text-sm text-gray-500" className="focus-visible:ring-2 focus-visible:ring-black focus:outline-none hover:underline  text-sm text-gray-500">Docs</a>
 
-                <a href="/account" title="Go to account page">
-                    <img src="https://avatars.githubusercontent.com/u/30219253?v=4" alt="Zen Tang avatar image" className="rounded-full w-7 h-7 " />
-                </a>
+                <img src="https://avatars.githubusercontent.com/u/30219253?v=4" alt="Zen Tang avatar image" className="rounded-full w-7 h-7 " />
             </div>
 
             <button aria-label="Navigation Menu Toggle" className="h-6 focus-visible:ring-2 focus-visible:ring-black focus:outline-none transition  text-black hover:text-gray-500 flex flex-gap-x-2 items-center justify-center pl-4 inline-block lg:hidden text-gray-400">
