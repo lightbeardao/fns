@@ -1,6 +1,14 @@
 import { query, verifyUserSignatures } from '@onflow/fcl'
 import { Scripts } from '../utils/flow'
 
+/*
+  this is our very simple implementation of server-side logic.
+
+  For authentication purposes, the server should store a record
+  of claims by users (login attempts) and the issued challenges.
+
+  This will be used to check any client responses!
+*/
 let challengeToName = {}
 
 /*
@@ -19,7 +27,12 @@ export function signIn({ name }) {
 }
 
 /*
-  The client will pass along this string, and we'll see if we can verify them!
+  The client will pass along the compositeSignatures, as well as the nonce (e.g. challenge)
+  that was given.
+
+  This logic is meant to run on a server. If verified, the server should generate a new Token
+  in the form of a JWS - this would be similar to what the client would get from Google after
+  verification.
 */
 export async function getServerResponse(challenge, compositeSignatures) {
   if (!compositeSignatures) return;
