@@ -1,7 +1,7 @@
 <br />
 <div align="center">
   <a href="">
-    <img src="./public/banner_halloween.png" alt="Logo" width="600" height="auto">
+    <img src="./public/banner_halloween.png" alt="Logo">
   </a>
   <p align="center"> <br />
     <h1 align="center">Welcome, Open Source Contributors!</h1>
