@@ -9,6 +9,7 @@ import { mutate, query, tx, authenticate, unauthenticate, currentUser, verifyUse
 import namehash from 'eth-ens-namehash'
 import IPFS from 'nano-ipfs-store'
 
+
 function emptyDIDDocument(id) {
   return {
     "@context": ["https://w3id.org/did/v1"],
@@ -37,7 +38,24 @@ function addPublicKey(c, { name, publicKey, controller, did }) {
   c.authentication.push(key)
 }
 
-function parseDID(doc) {
+function name2did(name) {
+  let hash = namehash.hash(name)
+  let did = `did:flow:${hash}`
+  console.log(`\n\n[DID] Calculating hash for ${name}...`)
+  console.log(`[DID] ${did}`)
+  return did
+}
+
+async function saveToIPFS(content) {
+  let ipfs = IPFS.at("https://ipfs.infura.io:5001");
+
+  console.log("[ipfs] Storing in IPFS", content)
+  let cid = await ipfs.add(content)
+  console.log("[ipfs]", cid)
+  return cid;
+}
+
+async function parseDID(doc) {
   if (!doc) return null;
 
   let id = doc.name;
@@ -54,12 +72,31 @@ function parseDID(doc) {
     })
   }
 
+  try {
+    let pointer = JSON.parse(doc.content);
+    let { type } = pointer;
+    switch (type) {
+      case "ipfs":
+        let ipfs = IPFS.at("https://ipfs.infura.io:5001");
+        console.log("Let's retrieve this pointer from IPFS...")
+        console.log('->', pointer.cid)
+        let result = await ipfs.cat(pointer.cid)
+        console.log('->', result)
+        break;
+      default:
+        console.log("Unrecognized content type:", type)
+    }
+
+  } catch (e) {
+    console.log("Unrecognized DID content", doc.content)
+  }
+
   return { didDocument: c }
 
 }
 
 
-export default function Lala() {
+export default function Home() {
   const [status, setStatus] = useState('Hi there')
   const [error, setError] = useState('')
 
@@ -85,6 +122,13 @@ export default function Lala() {
     })
   }
 
+  const changeDocument = async (name, url) => {
+    await submitFlowTx({
+      cadence: Transactions.CHANGE_DOCUMENT,
+      args: (arg, t) => [arg(name, t.String), arg(url, t.String)]
+    })
+  }
+
   const submitFlowTx = async ({ cadence, args }) => {
     try {
       setError('')
@@ -106,6 +150,7 @@ export default function Lala() {
     }
   }
 
+
   return (
     <Layout title="ipfs">
       <main className="border rounded-2xl mx-auto max-w-xl p-4 flex flex-col gap-2">
@@ -118,14 +163,9 @@ export default function Lala() {
           ]}
           title='Resolve DID'
           callback={async ([name]) => {
-            let hash = namehash.hash(name)
-            let did = `did:flow:${hash}`
-            console.log(`[DID]`)
-            console.log(`[DID] Calculating hash for ${name}...`)
-            console.log(`[DID] ${did}`)
-            console.log(`[DID]`)
+            let did = name2did(name)
             let res = await resolveFlowname(did);
-            let doc = parseDID(res)
+            let doc = await parseDID(res)
             console.log(doc)
           }}>Resolve DID</Form>
 
@@ -135,51 +175,29 @@ export default function Lala() {
           ]}
           title='Register DID'
           callback={async ([name]) => {
-            let hash = namehash.hash(name)
-            let did = `did:flow:${hash}`
-            console.log(`[DID]`)
-            console.log(`[DID] Calculating hash for ${name}...`)
-            console.log(`[DID] ${did}`)
-            console.log(`[DID]`)
+            let did = name2did(name)
             await registerDid(did, "nothing");
           }}>Register</Form>
 
         <Form
           fields={[
-            { placeholder: 'name (e.g. alice.eth)' },
-            { placeholder: 'key 1' },
-            { placeholder: 'service type' },
-            { placeholder: 'service name' },
+            { placeholder: 'ENS-type name (e.g. alice.flow)' },
+            { placeholder: 'content' },
           ]}
-          title='Save to IPFS'
-          callback={async ([did, s1, stype, sname]) => {
-            let ipfs = IPFS.at("https://ipfs.infura.io:5001");
+          title='Set Metadata'
+          callback={async ([name, content]) => {
+            let did = name2did(name)
 
-            let c = emptyDIDDocument(did)
-            console.log(c)
-            addPublicKey(c, {
-              name: "key-1",
-              publicKey: s1,
-              controller: did,
-              did
-            })
-            addService(c, {
-              name: sname,
-              type: stype
-            })
-
-            // Upload raw data
-            const data1 = JSON.stringify(c)
-
-            const cid1 = await ipfs.add(data1);
-            console.log("CID", cid1)
-
-            // Upload string
-            let result = await ipfs.cat(await ipfs.add(data1))
-            console.log({
-              didDocument: JSON.parse(result)
-            })
-          }}>Save</Form>
+            // check that it parses
+            try {
+              let c = JSON.stringify(JSON.parse(content));
+              let cid = await saveToIPFS(c);
+              console.log("[FlowNames] Storing IPFS pointer on Flow")
+              await changeDocument(did, JSON.stringify({ type: "ipfs", cid }));
+            } catch {
+              console.error("JSON content only")
+            }
+          }}>Save IPFS Content</Form>
 
       </main>
     </Layout >
