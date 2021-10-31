@@ -5,8 +5,8 @@ import assert from 'assert'
 import Head from 'next/head'
 import { Transactions, Scripts } from '../utils/flow'
 import { mutate, query, tx, authenticate, unauthenticate, currentUser, verifyUserSignature } from '@onflow/fcl'
+import {getDID} from '../utils/did-helper'
 
-import namehash from 'eth-ens-namehash'
 import IPFS from 'nano-ipfs-store'
 
 
@@ -36,14 +36,6 @@ function addPublicKey(c, { name, publicKey, controller, did }) {
 
   c.verificationMethod.push(key)
   c.authentication.push(key)
-}
-
-function name2did(name) {
-  let hash = namehash.hash(name)
-  let did = `did:flow:${hash}`
-  console.log(`\n\n[DID] Calculating hash for ${name}...`)
-  console.log(`[DID] ${did}`)
-  return did
 }
 
 async function uploadMetadata(metadata) {
@@ -186,7 +178,7 @@ export default function Home() {
           ]}
           title='Resolve DID'
           callback={async ([name]) => {
-            let did = name2did(name)
+            let did = getDID(name)
             let res = await resolveFlowname(did);
             let doc = await parseDID(res)
             console.log(`${name} => resolved DID Document`, doc)
@@ -198,7 +190,7 @@ export default function Home() {
           ]}
           title='Register DID'
           callback={async ([name]) => {
-            let did = name2did(name)
+            let did = getDID(name)
             await registerDid(did, { services: [] });
           }}>Register</Form>
 
@@ -209,7 +201,7 @@ export default function Home() {
           ]}
           title='Set Metadata'
           callback={async ([name, content]) => {
-            let did = name2did(name)
+            let did = getDID(name)
             try {
               // check that it parses
               let metadata = JSON.parse(content);
