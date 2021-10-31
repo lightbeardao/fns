@@ -1,5 +1,5 @@
 import { useState } from "react"
-import Button from './Button'
+import Button from './DivButton'
 import * as Collapsible from '@radix-ui/react-collapsible'
 import Table from './Table'
 
@@ -10,11 +10,11 @@ export default function Card({ name, signatures }) {
 
   return (
     <Collapsible.Root open={open} onOpenChange={setOpen} className="min-w-full flex flex-col w-full bg-white rounded-2xl transition shadow-slight hover:shadow-lg backdrop-filter backdrop-blur-3xl p-4 lg:p-8 mt-4">
-      <div className="flex flex-col lg:flex-row lg:items-center" href={url}>
+      <div className="flex flex-col lg:flex-row lg:items-center gap-6" href={url}>
         <div className="flex items-center">
           <img className="h-14 w-14 mr-6 lg:mr-8" src="/img/avatars/1.png" alt="Project Avatar of 8a71da08-6c11-47ab-a25a-24f4b2ebec58" />
           <div>
-            <h4 className="font-medium text-xl">{name}</h4>
+            <h4 className="font-medium text-xl truncate" style={{ maxWidth: '200px' }}>{name}</h4>
           </div>
         </div>
         <div className="order-last">
@@ -29,8 +29,9 @@ export default function Card({ name, signatures }) {
         <Table fields={
           [{ name: "Signature" }, { name: "Status" }, { name: "Role" }, { name: "+ new", fn: () => console.log("Add new") }]
         } data={
-          signatures.map(signature => ({
-            id: signature,
+          signatures.map(({ id, signature }) => ({
+            id,
+            signature,
             status: 'Active', role: 'Admin', functions: {
               remove: () => { console.log("Remove", signature) },
             }

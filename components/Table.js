@@ -1,17 +1,3 @@
-/* This example requires Tailwind CSS v2.0+ */
-const people = [
-  {
-    name: 'Jane Cooper',
-    title: 'Regional Paradigm Technician',
-    department: 'Optimization',
-    role: 'Admin',
-    email: 'jane.cooper@example.com',
-    status: 'Active',
-    image:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60',
-  },
-  // More people...
-]
 
 const defaultImage = 'https://source.unsplash.com/random/50x50'
 
@@ -61,9 +47,9 @@ export default function Example({ fields, data }) {
                         <div className="flex-shrink-0 h-10 w-10">
                           <img className="h-10 w-10 rounded-full" src={person.image || defaultImage} alt="" />
                         </div>
-                        <div className="ml-4">
+                        <div className="flex-shrink ml-4">
                           <div className="text-sm font-medium text-gray-900">{person.id}</div>
-                          <div className="text-sm text-gray-500">{person.email}</div>
+                          <div className="text-sm text-gray-500 truncate" style={{ width: '100px' }}>{person.signature}</div>
                         </div>
                       </div>
                     </td>
