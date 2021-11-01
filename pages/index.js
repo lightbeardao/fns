@@ -1,5 +1,5 @@
 import { query } from "@onflow/fcl";
-import Link from "next/Link";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import Button from "../components/DivButton";
 import Layout from "../components/Layout";

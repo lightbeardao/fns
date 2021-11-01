@@ -1,5 +1,5 @@
 import { currentUser, query } from "@onflow/fcl";
-import Link from "next/Link";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { UndrawAddUser } from "react-undraw-illustrations";
 import NameList from "../components/NameList";

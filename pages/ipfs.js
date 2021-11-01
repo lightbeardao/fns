@@ -1,12 +1,12 @@
 //@ts-check
 
+import { mutate, query, tx } from "@onflow/fcl";
+import Link from "next/link";
+import { useState } from "react";
 import Form from "../components/Form";
 import Layout from "../components/Layout";
-import { useState } from "react";
-import Link from "next/Link";
-import { Transactions, Scripts } from "../utils/flow";
-import { mutate, query, tx } from "@onflow/fcl";
 import { getDID, parseDID, uploadMetadata } from "../utils/did-helper";
+import { Scripts, Transactions } from "../utils/flow";
 
 export default function Home() {
   const [status, setStatus] = useState("Hi there");
