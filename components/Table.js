@@ -1,5 +1,4 @@
-
-const defaultImage = 'https://source.unsplash.com/random/50x50'
+const defaultImage = "https://source.unsplash.com/random/50x50";
 
 export default function Example({ fields, data }) {
   return (
@@ -13,25 +12,31 @@ export default function Example({ fields, data }) {
                   {fields?.map(({ name, fn }) => {
                     if (fn) {
                       return (
-                        <th key={name}
+                        <th
+                          key={name}
                           scope="col"
                           className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          <a href="#" onClick={fn} className="mr-2 text-indigo-600 hover:text-indigo-900">
+                          <a
+                            href="#"
+                            onClick={fn}
+                            className="mr-2 text-indigo-600 hover:text-indigo-900"
+                          >
                             {name}
                           </a>
                         </th>
-                      )
+                      );
                     }
                     if (name) {
                       return (
-                        <th key={name}
+                        <th
+                          key={name}
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
                           {name}
                         </th>
-                      )
+                      );
                     }
                   })}
                   <th scope="col" className="relative px-6 py-3">
@@ -45,11 +50,22 @@ export default function Example({ fields, data }) {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <img className="h-10 w-10 rounded-full" src={person.image || defaultImage} alt="" />
+                          <img
+                            className="h-10 w-10 rounded-full"
+                            src={person.image || defaultImage}
+                            alt=""
+                          />
                         </div>
                         <div className="flex-shrink ml-4">
-                          <div className="text-sm font-medium text-gray-900">{person.id}</div>
-                          <div className="text-sm text-gray-500 truncate" style={{ width: '100px' }}>{person.signature}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {person.id}
+                          </div>
+                          <div
+                            className="text-sm text-gray-500 truncate"
+                            style={{ width: "100px" }}
+                          >
+                            {person.signature}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -58,10 +74,17 @@ export default function Example({ fields, data }) {
                         {person.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{person.role}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {person.role}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {Object.entries(person.functions).map(([fName, f]) => (
-                        <a href="#" onClick={f} key={fName} className="mr-2 text-indigo-600 hover:text-indigo-900">
+                        <a
+                          href="#"
+                          onClick={f}
+                          key={fName}
+                          className="mr-2 text-indigo-600 hover:text-indigo-900"
+                        >
                           {fName}
                         </a>
                       ))}
@@ -74,5 +97,5 @@ export default function Example({ fields, data }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
