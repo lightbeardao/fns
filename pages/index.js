@@ -3,6 +3,7 @@ import Link from "next/Link";
 import { useEffect, useState } from "react";
 import Button from "../components/DivButton";
 import Layout from "../components/Layout";
+import NameList from "../components/NameList";
 import TextBox from "../components/TextBox";
 import { useAuth } from "../providers/AuthProvider";
 import { getDID } from "../utils/did-helper";
@@ -115,7 +116,7 @@ export default function Home() {
         cadence: Scripts.LIST_MY_NAMES,
         args: (arg, t) => [arg(user?.addr, t.Address)],
       });
-      setNames(null);
+      setNames(res);
     } catch (err) {
       console.log(err);
     }
@@ -125,9 +126,11 @@ export default function Home() {
     <Layout title="Welcome to FlowNames">
       <main
         id="start-of-content"
-        className="w-full mx-auto mt-6 mb-16 sm:mt-8 px-2.5 lg:px-7 max-w-screen-md"
+        className="w-full mx-auto mt-6 mb-16 sm:mt-8 px-2.5 lg:px-7 max-w-screen-md pb-4"
       >
-        {names ? <Content names={names} /> : <EmptyState />}
+        <EmptyState />
+        <div className="m-6"/>
+        {names && <NameList names={names} />}
       </main>
     </Layout>
   );
