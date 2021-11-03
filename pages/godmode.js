@@ -1,32 +1,31 @@
-import Button from "../components/Button";
-import Layout from "../components/Layout";
-import Form from "../components/Form";
-import { useState } from "react";
-
-import { Transactions, Scripts } from "../utils/flow";
 import {
+  authenticate,
+  currentUser,
   mutate,
   query,
-  tx,
-  authenticate,
   unauthenticate,
-  currentUser,
-  verifyUserSignature,
 } from "@onflow/fcl";
-import { signIn, getServerResponse } from "../utils/backend";
-
-export const signMessage = async (hexMessage) => {
-  try {
-    let c = await currentUser().signUserMessage(hexMessage);
-    return c;
-  } catch (error) {
-    console.log(error);
-  }
-};
+import { useState } from "react";
+import Button from "../components/Button";
+import Form from "../components/Form";
+import Layout from "../components/Layout";
+import Status from "../components/Status";
+import { useTxs } from "../providers/TransactionProvider";
+import { getServerResponse, signIn } from "../utils/backend";
+import { Scripts, Transactions } from "../utils/flow";
 
 export default function Home() {
-  const [status, setStatus] = useState("Welcome!");
-  const [error, setError] = useState("");
+  const [status, setStatus] = useState({ message: "Welcome!" });
+  const { addTx } = useTxs();
+
+  const signMessage = async (hexMessage) => {
+    try {
+      let c = await currentUser().signUserMessage(hexMessage);
+      return c;
+    } catch (error) {
+      setStatus({ err: error });
+    }
+  };
 
   const listMyNames = async (user) => {
     try {
@@ -34,6 +33,8 @@ export default function Home() {
         cadence: Scripts.LIST_MY_NAMES,
         args: (arg, t) => [arg(user?.addr, t.Address)],
       });
+      setStatus({ message: "Open console to see the tokens you own!" });
+
       console.log("Tokens you own:");
       for (let [name, tokens] of Object.entries(res)) {
         console.log(name, tokens);
@@ -44,24 +45,12 @@ export default function Home() {
   };
 
   const submitFlowTx = async ({ cadence, args }) => {
-    try {
-      setError("");
-      let transactionId = await mutate({
-        cadence,
-        args,
-        limit: 100,
-      });
-      console.log("tx:", transactionId);
-      tx(transactionId).subscribe((res) => {
-        console.log(res);
-        setStatus(res.status);
-        if (res.errorMessage) {
-          setError(res.errorMessage);
-        }
-      });
-    } catch (err) {
-      console.log(err);
-    }
+    let transactionId = await mutate({
+      cadence,
+      args,
+      limit: 100,
+    });
+    return addTx(transactionId);
   };
 
   const resolveFlowname = async (name) => {
@@ -70,10 +59,12 @@ export default function Home() {
         cadence: Scripts.LOOKUP_NAME,
         args: (arg, t) => [arg(name, t.String)],
       });
+
+      setStatus({ message: "Open console to see name contents" });
       console.log("Contents of name", res);
       console.log("authSignatures", res.authSignatures);
     } catch (err) {
-      console.info(`[FlowNames] ${name} is not registered yet :)`);
+      setStatus({ err: `${name} is not registered yet :)` });
     }
   };
 
@@ -85,14 +76,14 @@ export default function Home() {
         cadence: Scripts.AUTHORIZED_ON_NAME,
         args: (arg, t) => [arg(user?.addr, t.Address), arg(name, t.String)],
       });
-      console.log("Signed in with token:", res);
+      setStatus({ message: `Signed in with token ${res}` });
     } catch (err) {
-      console.info(`[FlowNames] Can't sign in ${name}`);
+      setStatus({ err: `Can't sign in as ${name}` });
     }
   };
 
   const addSignature = async (name, id, signature) => {
-    await submitFlowTx({
+    let { success, err } = await submitFlowTx({
       cadence: Transactions.ADD_SIGNATURE,
       args: (arg, t) => [
         arg(name, t.String),
@@ -100,16 +91,18 @@ export default function Home() {
         arg(signature, t.String),
       ],
     });
+    setStatus({ success, err, message: "Added signature" });
   };
   const removeSignature = async (name, signature) => {
-    await submitFlowTx({
+    let { success, err } = await submitFlowTx({
       cadence: Transactions.REMOVE_SIGNATURE,
       args: (arg, t) => [arg(name, t.String), arg(signature, t.String)],
     });
+    setStatus({ success, err, message: "Removed signature!" });
   };
 
   const registerName = async (name, id, signature, url) => {
-    await submitFlowTx({
+    let { success, err } = await submitFlowTx({
       cadence: Transactions.REGISTER_NAME,
       args: (arg, t) => [
         arg(name, t.String),
@@ -118,49 +111,25 @@ export default function Home() {
         arg(url, t.String),
       ],
     });
+    setStatus({ success, err, message: `Registered ${name}` });
   };
   const resetCollection = async () => {
-    await submitFlowTx({
+    let { success, err } = await submitFlowTx({
       cadence: Transactions.RESET_COLLECTION,
     });
+    setStatus({ success, err, message: "Reset collection" });
   };
   const createCollection = async () => {
-    try {
-      setError("");
-      let transactionId = await mutate({
-        cadence: Transactions.CREATE_COLLECTION,
-        limit: 100,
-      });
-      console.log("tx:", transactionId);
-      tx(transactionId).subscribe((res) => {
-        if (res.status < 4) {
-          setStatus("Processing...");
-        } else {
-          setStatus("Done");
-        }
-        if (res.errorMessage) {
-          setError(res.errorMessage);
-        }
-      });
-    } catch (err) {
-      console.log(err);
-    }
+    let { success, err } = await submitFlowTx({
+      cadence: Transactions.CREATE_COLLECTION,
+    });
+    setStatus({ success, err, message: "Created collection" });
   };
 
   return (
     <Layout>
       <main className="border rounded-2xl mx-auto max-w-xl p-4 flex flex-col gap-2">
-        <p>
-          <strong>Status: </strong>
-          {status === 3
-            ? "almost done..."
-            : status === 4
-            ? "done"
-            : typeof status === "string"
-            ? status
-            : "processing..."}
-        </p>
-        {error && <p className="text-red-700">{error}</p>}
+        <Status status={status} />
 
         {/* <Button onClick={async () => {
           await createCollection()
@@ -245,7 +214,7 @@ export default function Home() {
             await authenticate();
             const cc = await currentUser().snapshot();
             console.log("Current user", cc);
-            setStatus("Logged in");
+            setStatus({ ...status, message: "Logged in" });
           }}
         >
           Get current user (or sign in)
@@ -254,7 +223,7 @@ export default function Home() {
         <Button
           onClick={async () => {
             await unauthenticate();
-            setStatus("Logged out!");
+            setStatus({ ...status, message: "Logged out" });
           }}
         >
           Sign out
@@ -269,12 +238,16 @@ export default function Home() {
             let { challenge } = await signIn({ name: login });
             let compositeSignatures = await signMessage(challenge);
             console.log("Signed", compositeSignatures);
+            setStatus({ message: "Signed" });
 
             let loggedIn = await getServerResponse(
               challenge,
               compositeSignatures
             );
             console.log("Verified?", loggedIn);
+            setStatus({
+              message: `Verified? ${loggedIn} (Open console to see full logs)`,
+            });
           }}
         >
           Login
