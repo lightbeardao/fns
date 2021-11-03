@@ -1,8 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { send, getTransactionStatus, decode, tx } from "@onflow/fcl";
-
-import TxDetails from "../components/TxDetails";
+import { decode, getTransactionStatus, send, tx } from "@onflow/fcl";
 import { styled } from "@stitches/react";
+import { createContext, useContext, useEffect, useState } from "react";
+import TxDetails from "../components/TxDetails";
 
 const txContext = createContext();
 

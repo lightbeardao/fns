@@ -1,16 +1,18 @@
 //@ts-check
 
-import { mutate, query, tx } from "@onflow/fcl";
+import { mutate, query } from "@onflow/fcl";
 import Link from "next/link";
 import { useState } from "react";
 import Form from "../components/Form";
 import Layout from "../components/Layout";
+import Status from "../components/Status";
+import { useTxs } from "../providers/TransactionProvider";
 import { getDID, parseDID, uploadMetadata } from "../utils/did-helper";
 import { Scripts, Transactions } from "../utils/flow";
 
 export default function Home() {
-  const [status, setStatus] = useState("Hi there");
-  const [error, setError] = useState("");
+  const [status, setStatus] = useState({});
+  const { addTx } = useTxs();
 
   const resolveFlowname = async (name) => {
     try {
@@ -35,9 +37,16 @@ export default function Home() {
       cid,
     });
 
-    await submitFlowTx({
+    let transactionId = await mutate({
       cadence: Transactions.REGISTER_DID,
       args: (arg, t) => [arg(name, t.String), arg(embeddedContent, t.String)],
+      limit: 100,
+    });
+
+    let res = await addTx(transactionId);
+    setStatus({
+      ...res,
+      message: `Congrats! You now have ${name}!`,
     });
   };
 
@@ -52,51 +61,24 @@ export default function Home() {
       cid,
     });
 
-    await submitFlowTx({
+    let transactionId = await mutate({
       cadence: Transactions.CHANGE_DOCUMENT,
       args: (arg, t) => [arg(name, t.String), arg(embeddedContent, t.String)],
+      limit: 100,
     });
-  };
 
-  const submitFlowTx = async ({ cadence, args }) => {
-    try {
-      setError("");
-      let transactionId = await mutate({
-        cadence,
-        args,
-        limit: 100,
-      });
-      console.log("tx:", transactionId);
-      console.log(
-        "You'll see 4 updates... status: 4 means your transaction is finished, but testnet takes a while! (~20s)"
-      );
-      tx(transactionId).subscribe((res) => {
-        console.log(res);
-        setStatus(res.status);
-        if (res.errorMessage) {
-          setError(res.errorMessage);
-        }
-      });
-    } catch (err) {
-      console.log(err);
-    }
+    let { success, err } = await addTx(transactionId);
+    setStatus({
+      success,
+      err,
+      message: `Congrats! You updated ${name}`,
+    });
   };
 
   return (
     <Layout title="ipfs">
       <main className="border rounded-2xl mx-auto max-w-xl p-4 flex flex-col gap-2">
-        <p>
-          <strong>Status: </strong>
-          {status === 3
-            ? "almost done..."
-            : status === 4
-            ? "done"
-            : typeof status === "string"
-            ? status
-            : "processing..."}
-        </p>
-        {error && <p className="text-red-700">{error}</p>}
-
+        <Status status={status} />
         <Form
           fields={[{ placeholder: "ENS-type name (e.g. alice.flow)" }]}
           title="Resolve DID"
@@ -105,6 +87,7 @@ export default function Home() {
             let res = await resolveFlowname(did);
             let doc = await parseDID(res);
             console.log(`${name} => resolved DID Document`, doc);
+            setStatus({ message: `Resolved ${name} (check the console!)` });
           }}
         >
           Resolve DID
