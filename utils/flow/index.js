@@ -1,4 +1,10 @@
 export const Scripts = {
+  REGISTER_COUNT: `
+  import FlowNames from 0xFlowNames
+
+pub fun main(): UInt256 {
+  return FlowNames.registerCount
+}`,
   LOOKUP_NAME: `
   import FlowNames from 0xFlowNames
 

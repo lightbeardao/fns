@@ -1,6 +1,17 @@
+import { query } from "@onflow/fcl";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Scripts } from "../../utils/flow";
 
 export default function Header() {
+  const [count, setCount] = useState("");
+  useEffect(async () => {
+    let res = await query({
+      cadence: Scripts.REGISTER_COUNT,
+    });
+    if (res) setCount(res);
+  }, []);
+
   return (
     <header className="text-gray-500 w-full h-12 lg:h-20 px-3 lg:px-14 relative flex justify-between items-center mb-12 ">
       <p className="flex items-center text-sm">
@@ -18,7 +29,7 @@ export default function Header() {
         </Link>
         <span className="mx-2 lg:mx-4 opacity-50">/</span>
         <span className="font-medium opacity-50 last:opacity-100 whitespace-nowrap">
-          mwufi
+          {count ? `${count} names registered!` : "mwufi"}
         </span>
       </p>
 
