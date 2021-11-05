@@ -9,6 +9,11 @@ pub contract FlowNames {
   access(self) var documentUrl: {String: String}
   pub var registerCount: UInt256
 
+  pub event NameCreated(name: String)
+  pub event NameChanged(name: String, oldContent: String?, newContent: String?)
+  pub event SignatureAdded(name: String, signature: String)
+  pub event SignatureRevoked(name: String, signature: String)
+
   // we need to know where users keep their stuff!
   pub let CollectionStoragePath: StoragePath
   pub let CollectionPublicPath: PublicPath
@@ -43,6 +48,7 @@ pub contract FlowNames {
     pub fun removeSignature(signature: String): Bool {
       let c = FlowNames.removeSignature(name: self.name, existingSignature: self.signature, signature: signature)
       if c != nil {
+        emit SignatureRevoked(name: self.name, signature: signature)
         return true
       }
       return false
@@ -181,6 +187,7 @@ pub contract FlowNames {
     }
     self.authorizedSignatures[name] = {signature: id}
     self.registerCount = self.registerCount + 1
+    emit NameCreated(name: name)
     return <- create NameToken(name: name, id: id, signature: signature)
   }
 
@@ -200,6 +207,7 @@ pub contract FlowNames {
     pre {
       self.authorizedSignatures[name]!.containsKey(existingSignature)
     }
+    emit NameChanged(name: name, oldContent: self.documentUrl[name], newContent: newUrl)
     self.documentUrl[name] = newUrl
   }
   
@@ -208,7 +216,7 @@ pub contract FlowNames {
       self.authorizedSignatures[name]!.containsKey(existingSignature)
     }
     self.authorizedSignatures[name]!.insert(key: signature, id)
-
+    emit SignatureAdded(name: name, signature: signature)
     return <- create NameToken(name: name, id: id, signature: signature)
   }
   
